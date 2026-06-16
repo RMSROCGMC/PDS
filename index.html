@@ -7,16 +7,12 @@
     <script>
         window.MathJax = {
             tex: {
-                inlineMath: [['$', '$']],
-                displayMath: [['$$', '$$']]
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-            },
-            startup: {
-                pageReady: () => {
-                    return MathJax.startup.defaultPageReady();
-                }
             }
         };
     </script>
@@ -141,6 +137,7 @@
             margin-bottom: 25px;
             overflow-x: auto;
             line-height: 1.6;
+            font-size: 16px;
         }
         
         .terms-box {
@@ -212,7 +209,7 @@
                 
                 <h4>第一條：評量結果之學術客觀性與免責聲明</h4>
                 <p>1. 本系統所提供之測驗數據、答題正確率及終端綜合報告，均基於受測者線上即時作答表現之演算結果，僅供學術自評與學習診斷參考。</p>
-                <p>2. 本系統之任何技術評量結果，<span class="important-text">均不對任何國家考試、期末正式評量、專業證照檢定之最終成績做出明示或暗示之成果保障</span>。受測者若因個人理解偏差、操作失誤或自身學術能力所致之實體考試成績表現不佳，本系統及其開發者概不承擔任何法律責任、行政責任或補償義務。</p>
+                <p>2. 本系統之任何技術評量結果，<span class="important-text">均不對任何國家考試、期末正式評量、專業證照檢定之最終成績做出明示 or 暗示之成果保障</span>。受測者若因個人理解偏差、操作失誤或自身學術能力所致之實體考試成績表現不佳，本系統及其開發者概不承擔任何法律責任、行政責任或補償義務。</p>
                 
                 <h4>第二條：受測者勘誤與主動回報義務</h4>
                 <p>1. 基於對電學教育之嚴謹性要求，本系統內所有試題之電路圖量值、時域相量函數及核心 LaTeX 公式均經過校對。然鑑於網頁動態渲染與瀏覽器相容性之不確定性，受測者於評量過程中，<span class="important-text">如發現任何試題文本出錯、公式渲染遺失或電路物理邏輯漏洞，有義務立即向開發者提出勘誤回報</span>。</p>
@@ -280,7 +277,7 @@
         let wrongQuestionsLog = [];
         let totalAnswered = 0;
         let totalCorrect = 0;
-        let hasAnsweredCurrentNode = false; // 防呆鎖定旗標
+        let hasAnsweredCurrentNode = false; 
 
         function validateAgreement() {
             const isChecked = document.getElementById("agree-checkbox").checked;
@@ -320,7 +317,7 @@
             showQuestion();
         }
 
-        // 核心渲染器：保證每次載入時 LaTeX 完全就緒
+        // 核心渲染器：保證每次載入時 LaTeX 完全就緒並排隊轉譯
         function showQuestion() {
             if (currentQuestionIdx >= quizQuestions.length) {
                 showResult();
@@ -346,7 +343,7 @@
                 const stepData = qData.mode1_steps[currentStepIdx];
                 const stepTitle = document.createElement("p");
                 stepTitle.style.fontWeight = "500";
-                stepTitle.style.fontSize = "14px";
+                stepTitle.style.fontSize = "15px";
                 stepTitle.style.color = "#aaaaaa";
                 stepTitle.innerHTML = `<strong>當前子步驟 (${currentStepIdx + 1}/${qData.mode1_steps.length})：</strong>` + stepData.q;
                 optionsContainer.appendChild(stepTitle);
@@ -355,14 +352,14 @@
                     const btn = document.createElement("button");
                     btn.className = "btn";
                     btn.innerHTML = optionText;
-                    btn.onclick = (e) => checkAnswerMode1(index, stepData.correct, e.target);
+                    btn.onclick = (e) => checkAnswerMode1(index, stepData.correct, e.currentTarget);
                     optionsContainer.appendChild(btn);
                 });
             } else {
                 const matchData = qData.mode2_match;
                 const matchTitle = document.createElement("p");
                 matchTitle.style.fontWeight = "500";
-                matchTitle.style.fontSize = "14px";
+                matchTitle.style.fontSize = "15px";
                 matchTitle.style.color = "#aaaaaa";
                 matchTitle.innerHTML = matchData.q;
                 optionsContainer.appendChild(matchTitle);
@@ -371,12 +368,12 @@
                     const btn = document.createElement("button");
                     btn.className = "btn";
                     btn.innerHTML = optionText;
-                    btn.onclick = (e) => checkAnswerMode2(index, matchData.correct, e.target);
+                    btn.onclick = (e) => checkAnswerMode2(index, matchData.correct, e.currentTarget);
                     optionsContainer.appendChild(btn);
                 });
             }
             
-            // 強制啟動 MathJax 排隊轉譯核心，解決分開抽離後動態生成的 LaTeX 渲染失靈問題
+            // 觸發 MathJax 非同步渲染任務佇列，即時轉譯新生成的 LaTeX 字元
             if (window.MathJax && window.MathJax.typesetPromise) {
                 MathJax.typesetPromise([document.getElementById("quiz-view")]).catch((err) => console.log("排版異常:", err.message));
             }
@@ -391,7 +388,6 @@
             const qData = quizQuestions[currentQuestionIdx];
             const buttons = document.getElementById("options-container").getElementsByClassName("btn");
             
-            // 停用所有按鈕並標示顏色
             for (let btn of buttons) btn.disabled = true;
 
             if (selectedIndex === correctIndex) {
@@ -401,7 +397,7 @@
                 feedback.className = "hint correct";
             } else {
                 targetBtn.classList.add("opt-wrong");
-                buttons[correctIndex].classList.add("opt-correct"); // 自動幫受測者亮出正確答案，增加易用性
+                buttons[correctIndex].classList.add("opt-correct"); 
                 feedback.innerText = "【評定結果：錯誤】該步驟之電路物理邏輯或公式結構存在瑕疵。請點擊下方按鈕繼續。";
                 feedback.className = "hint wrong";
                 logWrongQuestion(qData);
@@ -439,7 +435,6 @@
             document.getElementById("next-btn").style.display = "block";
         }
 
-        // 大幅簡化使用者操作邏輯：統一由這個按鈕自動判斷進度切換
         function handleNextStepClick() {
             if (currentMode === 1) {
                 const qData = quizQuestions[currentQuestionIdx];
@@ -500,7 +495,7 @@
             document.getElementById("menu-view").classList.add("active");
         }
 
-        // 計時器區塊保持不變
+        // 計時器邏輯
         let timerInstance = null;
         let timeRemaining = 25 * 60;
         let isBreak = false;
