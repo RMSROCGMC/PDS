@@ -123,7 +123,7 @@ const allQuestions = [
             { q: "步驟一：計算兩元件於串聯架構下之總複數阻抗 $Z_s$，並求取其串聯功率因數 $PF_s$。", a: [String.raw`$PF_s = \frac{R}{Z_s} = \frac{6}{\sqrt{6^2 + 8^2}} = 0.6$`, String.raw`$PF_s = \frac{R}{X_L} = 0.75$`], correct: 0 },
             { q: "步驟二：計算兩元件於並聯架構下之總導納 $Y$，並求取其並聯功率因數 $PF_p$。", a: [String.raw`$PF_p = \frac{G}{Y} = \frac{1/6}{\sqrt{(1/6)^2 + (1/8)^2}} = \frac{8}{\sqrt{6^2 + 8^2}} = 0.8$`, String.raw`$PF_p = 0.6$`], correct: 0 },
             { q: "步驟三：由上述兩數值推演阻抗互補之交流功率因數終極數學關係式。", a: [String.raw`$PF_s^2 + PF_p^2 = 0.6^2 + 0.8^2 = 1$`, String.raw`$PF_s + PF_p = 1.4$`], correct: 0 }
-                ],
+        ],
         mode2_match: {
             q: "請選擇本題最嚴謹之串並聯功因數值與恆等式對應選項：",
             a: [
