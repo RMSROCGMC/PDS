@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基本電學第10章：期末考滿分衝刺系統</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/solid.js"></script>
-    <script id="MathJax-script-main" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/browser.js"></script>
+    <title>基本電學第10章</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/browser.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
+            --bg: #000000;
+            --text: #ffffff;
+            --important: #ff0000;
+            --card-bg: #111111;
+            --border: #333333;
+            --btn-bg: #222222;
+            --btn-hover: #333333;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -29,91 +36,93 @@
         .container {
             width: 100%;
             max-width: 800px;
-            background: var(--card);
+            background: var(--card-bg);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-radius: 0px;
+            border: 1px solid var(--border);
             margin-top: 20px;
+            box-sizing: border-box;
         }
         .timer-banner {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #0f172a;
-            color: white;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
             padding: 12px 24px;
-            border-radius: 8px;
             width: 100%;
-            max-width: 760px;
-            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+            max-width: 800px;
+            box-sizing: border-box;
         }
         .timer-controls button {
-            background: #334155;
-            color: white;
-            border: none;
+            background: var(--btn-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
             padding: 6px 12px;
             margin-left: 5px;
-            border-radius: 4px;
             cursor: pointer;
         }
-        .timer-controls button:hover { background: #475569; }
+        .timer-controls button:hover {
+            background: var(--btn-hover);
+        }
         .mode-select, .quiz-section, .result-section { display: none; }
         .active { display: block; }
         .btn {
             display: block;
             width: 100%;
             padding: 14px;
-            margin: 10px 0;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
+            margin: 12px 0;
+            background: var(--btn-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
             font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
             text-align: left;
+            cursor: pointer;
             transition: background 0.2s;
         }
-        .btn:hover { background: #1d4ed8; }
+        .btn:hover { background: var(--btn-hover); }
         .btn-center { text-align: center; }
+        .important-text {
+            color: var(--important);
+            font-weight: bold;
+        }
         .hint {
             padding: 12px;
             margin: 10px 0;
-            border-radius: 6px;
+            border: 1px solid var(--border);
             font-weight: bold;
             display: none;
         }
-        .hint.correct { background: #dcfce7; color: var(--success); display: block; }
-        .hint.wrong { background: #fee2e2; color: var(--danger); display: block; }
+        .hint.correct { border-color: #00ff00; color: #00ff00; display: block; }
+        .hint.wrong { border-color: var(--important); color: var(--important); display: block; }
         .progress-bar {
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
+            height: 4px;
+            background: #222222;
             overflow: hidden;
             margin-bottom: 20px;
         }
-        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        .progress-fill { height: 100%; background: var(--important); width: 0%; transition: width 0.3s; }
         .latex-box {
-            background: #f1f5f9;
+            background: #050505;
+            border: 1px solid var(--border);
             padding: 15px;
-            border-radius: 6px;
             margin-bottom: 20px;
             overflow-x: auto;
         }
-        /* 休息彈窗 */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
         .modal-content {
-            background: white;
+            background: var(--card-bg);
+            border: 1px solid var(--important);
             padding: 30px;
-            border-radius: 12px;
             text-align: center;
             max-width: 400px;
             width: 90%;
@@ -123,7 +132,7 @@
 <body>
 
     <div class="timer-banner">
-        <div>⏱️ <span id="timer-label">專注時間</span>: <span id="time-display" style="font-family: monospace; font-size: 18px; font-weight: bold;">25:00</span></div>
+        <div><span id="timer-label">專注時間</span>: <span id="time-display" style="font-family: monospace; font-size: 18px; font-weight: bold;">25:00</span></div>
         <div class="timer-controls">
             <button onclick="toggleTimer()">暫停/開始</button>
             <button onclick="resetTimer()">重設25分</button>
@@ -133,17 +142,17 @@
 
     <div class="container">
         <div id="menu-view" class="mode-select active">
-            <h2 style="text-align: center; margin-bottom: 30px;">⚡ 基本電學期末考滿分衝刺系統 ⚡</h2>
-            <button class="btn btn-center" onclick="startQuiz(1)">🎯 模式 1：步驟拆解·下一步戰術選擇</button>
-            <p style="color:#64748b; font-size:14px; margin-top:-5px; margin-bottom:20px; padding-left:10px;">給予完整題目，一步步選擇正確的解題思路與邏輯，適合訓練直覺反應。</p>
+            <h2 style="text-align: center; margin-bottom: 30px;">基本電學第10章：期末考</h2>
+            <button class="btn btn-center" onclick="startQuiz(1)">模式 1：步驟拆解·下一步驟選擇</button>
+            <p style="color:#888888; font-size:14px; margin-top:-5px; margin-bottom:20px; padding-left:10px;">給予完整題目，逐步選擇正確的解題思路與邏輯。</p>
             
-            <button class="btn btn-center" onclick="startQuiz(2)">📝 模式 2：核心公式·全流程地獄速配</button>
-            <p style="color:#64748b; font-size:14px; margin-top:-5px; margin-bottom:20px; padding-left:10px;">直接切入核心，從選項中找出該題所對應的關鍵 LaTeX 公式與最終答案。</p>
+            <button class="btn btn-center" onclick="startQuiz(2)">模式 2：核心公式·全流程速配</button>
+            <p style="color:#888888; font-size:14px; margin-top:-5px; margin-bottom:20px; padding-left:10px;">直接切入核心，從選項中找出該題所對應的關鍵 LaTeX 公式與最終答案。</p>
         </div>
 
         <div id="quiz-view" class="quiz-section">
             <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-            <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 14px;">
+            <div style="display: flex; justify-content: space-between; color: #888888; font-size: 14px;">
                 <span id="question-index">題目 1 / 7</span>
                 <span id="score-track">正確率: 100%</span>
             </div>
@@ -152,45 +161,45 @@
             
             <div id="options-container"></div>
             <div id="feedback-hint" class="hint"></div>
-            <button id="next-btn" class="btn btn-center" style="background:#0f172a; display:none;" onclick="nextQuestion()">下一題 ➡️</button>
+            <button id="next-btn" class="btn btn-center" style="border-color: var(--important); display:none;" onclick="nextQuestion()">下一題</button>
         </div>
 
         <div id="result-view" class="result-section" style="text-align: center;">
-            <h2>🎉 測試完成！</h2>
-            <div style="font-size: 48px; font-weight: bold; color: var(--primary); margin: 20px 0;" id="accuracy-rate">0%</div>
+            <h2>測試完成</h2>
+            <div style="font-size: 48px; font-weight: bold; color: var(--important); margin: 20px 0;" id="accuracy-rate">0%</div>
             <p id="result-comment" style="font-size: 18px; margin-bottom: 30px;"></p>
-            <button class="btn btn-center" style="background:var(--success);" onclick="retryWrongQuestions()" id="retry-wrong-btn">🔄 錯題重新挑戰</button>
-            <button class="btn btn-center" style="background:#64748b;" onclick="backToMenu()">🏠 回到主選單</button>
+            <button class="btn btn-center" style="border-color:#00ff00;" onclick="retryWrongQuestions()" id="retry-wrong-btn">錯題重新挑戰</button>
+            <button class="btn btn-center" style="border-color:#888888;" onclick="backToMenu()">回到主選單</button>
         </div>
     </div>
 
     <div id="break-modal" class="modal">
         <div class="modal-content">
-            <h2 style="color:var(--primary);">⏳ 專注時間結束！</h2>
-            <p style="font-size:16px; color:#475569;">根據設定，請強制要求停止 5 分鐘進行大腦休息，保護眼睛與維持高效記憶。</p>
+            <h2 class="important-text">專注時間結束</h2>
+            <p style="font-size:16px; color:#bbbbbb;">請強制要求停止 5 分鐘進行大腦休息。</p>
             <div style="font-size:36px; font-weight:bold; margin:20px 0; font-family:monospace;" id="break-time-display">05:00</div>
-            <button class="btn btn-center" style="background:var(--danger);" onclick="closeBreakModal()">🔓 提早解除強制休息</button>
+            <button class="btn btn-center" style="border-color:var(--important);" onclick="closeBreakModal()">提早解除強制休息</button>
         </div>
     </div>
 
     <script>
-        // 核心資料庫 (內含照片上所有精準數字與 LaTeX 公式)
+        // 核心題庫：完整 LaTeX 格式封裝
         const allQuestions = [
             {
                 id: 1,
-                title: "例題 10-2 平均功率計算",
-                desc: "某單相交流電路，若電源電壓與電路電流分別為：<br>\\( v(t) = 50\\sqrt{2}\\sin(377t + 30^\\circ)\\text{ V} \\)<br>\\( i(t) = 5\\sqrt{2}\\sin(377t - 30^\\circ)\\text{ A} \\)<br>則此電路之平均功率 \\( P \\) 為何？",
+                title: "例題 10-2 平均功率",
+                desc: "某單相交流電路，若電源電壓與電路電流分別為 $v(t) = 50\\sqrt{2}\\sin(377t + 30^{\\circ})\\text{ V}$，$i(t) = 5\\sqrt{2}\\sin(377t - 30^{\\circ})\\text{ A}$，則此電路之平均功率 $P$ 為何？",
                 mode1_steps: [
-                    { q: "【第一步戰術】如何將電壓與電流轉為「有效值」形式？", a: ["取最大值除以 \\(\\sqrt{2}\\)，得到 \\(V=50\\text{ V}, I=5\\text{ A}\\)", "直接用前面的係數 \\(V=50\\sqrt{2}, I=5\\sqrt{2}\\)", "將頻率 377 帶入除以二"], correct: 0 },
-                    { q: "【第二步戰術】如何計算兩者的相位角差 \\(\\theta\\)？", a: ["\\(\\theta = 30^\\circ - (-30^\\circ) = 60^\\circ\\)", "\\(\\theta = 30^\\circ + (-30^\\circ) = 0^\\circ\\)", "\\(\\theta = 30^\\circ - 30^\\circ = 0^\\circ\\)"], correct: 0 },
-                    { q: "【第三步戰術】帶入公式求出最終答案 \\(P\\)？", a: ["\\(P = 50 \\times 5 \\times \\cos 60^\\circ = 125\\text{ W}\\)", "\\(P = 50 \\times 5 = 250\\text{ W}\\)", "\\(P = 50 \\times 5 \\times \\sin 60^\\circ = 125\\sqrt{3}\\text{ W}\\"], correct: 0 }
+                    { q: "步驟一：如何將電壓與電流轉為有效值相量形式？", a: ["$\\bar{V} = 50\\angle 30^{\\circ}\\text{ V}, \\bar{I} = 5\\angle -30^{\\circ}\\text{ A}$", "$\\bar{V} = 50\\sqrt{2}\\angle 30^{\\circ}\\text{ V}, \\bar{I} = 5\\sqrt{2}\\angle -30^{\\circ}\\text{ A}$"], correct: 0 },
+                    { q: "步驟二：如何計算相位角差 $\\theta$？", a: ["$\\theta = \\theta_v - \\theta_i = 30^{\\circ} - (-30^{\\circ}) = 60^{\\circ}$", "$\\theta = \\theta_v - \\theta_i = 30^{\\circ} - 30^{\\circ} = 0^{\\circ}$"], correct: 0 },
+                    { q: "步驟三：帶入平均功率公式求出最終答案？", a: ["$P = VI\\cos\\theta = 50 \\times 5 \\times \\cos 60^{\\circ} = 125\\text{ W}$", "$P = VI = 50 \\times 5 = 250\\text{ W}$"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出計算本題平均功率 \\(P\\) 的核心過程公式與死記答案：",
+                    q: "請選擇正確的計算過程公式與答案：",
                     a: [
-                        "\\(P = VI\\cos\\theta = 50 \\times 5 \\times \\cos 60^\\circ = 125\\text{ W}\\)",
-                        "\\(P = VI = 50 \\times 5 = 250\\text{ W}\\)",
-                        "\\(P = I^2 R = 25 \\times 50 = 1250\\text{ W}\\)"
+                        "$P = VI\\cos\\theta = 50 \\times 5 \\times \\cos 60^{\\circ} = 125\\text{ W}$",
+                        "$P = VI\\sin\\theta = 50 \\times 5 \\times \\sin 60^{\\circ} = 125\\sqrt{3}\\text{ VAR}$",
+                        "$P = VI = 50 \\times 5 = 250\\text{ W}$"
                     ],
                     correct: 0
                 }
@@ -198,35 +207,36 @@
             {
                 id: 2,
                 title: "例題 10-3 純電阻電路之電功率",
-                desc: "純電阻交流電路，若負載 \\(R = 50\\ \\Omega\\)，當接於 \\(v(t) = 100\\sqrt{2}\\sin(377t)\\text{ V}\\) 電源電壓時，求其各項功率參數。",
+                desc: "如圖 10-10 所示之純電阻交流電路，若負載 $R = 50\\ \\Omega$，當接於 $v(t) = 100\\sqrt{2}\\sin(377t)\\text{ V}$ 電源電壓時，試求該電路之 (1) $\\theta$ (2) $P$ (3) $P_{\\max}$ (4) $P_{\\min}$ (5) $f_p$。",
                 mode1_steps: [
-                    { q: "【第一步戰術】純電阻電路的相位角差 \\(\\theta\\) 是多少？", a: ["\\(\\theta = 0^\\circ\\) (電壓電流同相)", "\\(\\theta = 90^\\circ\\)", "\\(\\theta = -90^\\circ\\)"], correct: 0 },
-                    { q: "【第二步戰術】算出電路有效值電流 \\(I\\) 以及平均功率 \\(P\\)？", a: ["\\(I = 2\\text{ A} \\rightarrow P = 100 \\times 2 \\times \\cos 0^\\circ = 200\\text{ W}\\)", "\\(I = 2\\sqrt{2}\\text{ A} \\rightarrow P = 400\\text{ W}\\)", "\\(I = 2\\text{ A} \\rightarrow P = 0\\text{ W}\\"], correct: 0 },
-                    { q: "【第三步戰術】求出最大、最小瞬時功率 \\(P_{\\max}, P_{\\min}\\) 與功率頻率 \\(f_p\\)？", a: ["\\(P_{\\max}=400\\text{ W}, P_{\\min}=0\\text{ W}, f_p=120\\text{ Hz}\\)", "\\(P_{\\max}=200\\text{ W}, P_{\\min}=-200\\text{ W}, f_p=60\\text{ Hz}\\)", "\\(P_{\\max}=400\\text{ W}, P_{\\min}=0\\text{ W}, f_p=60\\text{ Hz}\\"], correct: 0 }
+                    { q: "步驟一：求出純電阻電路之電壓與電流相位角差 $\\theta$？", a: ["$\\theta = \\theta_v - \\theta_i = 0^{\\circ} - 0^{\\circ} = 0^{\\circ}$", "$\\theta = 90^{\\circ}$"], correct: 0 },
+                    { q: "步驟二：求出有效值電流 $\\bar{I}$ 與平均功率 $P$？", a: ["$\\bar{I} = 2\\angle 0^{\\circ}\\text{ A} \\rightarrow P = VI\\cos\\theta = 100 \\times 2 \\times \\cos 0^{\\circ} = 200\\text{ W}$", "$\\bar{I} = 2\\sqrt{2}\\angle 0^{\\circ}\\text{ A} \\rightarrow P = 400\\text{ W}$"], correct: 0 },
+                    { q: "步驟三：求出最大與最小瞬時功率 $P_{\\max}$ , $P_{\\min}$？", a: ["$P_{\\max} = VI(\\cos\\theta + 1) = 400\\text{ W}, P_{\\min} = VI(\\cos\\theta - 1) = 0\\text{ W}$", "$P_{\\max} = 200\\text{ W}, P_{\\min} = -200\\text{ W}$"], correct: 0 },
+                    { q: "步驟四：求出功率之頻率 $f_p$？", a: ["$f = \\frac{377}{2\\pi} = 60\\text{ Hz} \\rightarrow f_p = 2f = 120\\text{ Hz}$", "$f_p = f = 60\\text{ Hz}$"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出本純電阻電路 \\((R=50\\Omega)\\) 的完整死記答案鏈：",
+                    q: "請選擇純電阻電路完整的答案鏈組合：",
                     a: [
-                        "\\(\\theta=0^\\circ, P=200\\text{ W}, P_{\\max}=400\\text{ W}, P_{\\min}=0\\text{ W}, f_p=120\\text{ Hz}\\)",
-                        "\\(\\theta=0^\\circ, P=200\\text{ W}, Q=200\\text{ VAR}, P_{\\max}=400\\text{ W}, f_p=60\\text{ Hz}\\)",
-                        "\\(\\theta=90^\\circ, P=0\\text{ W}, P_{\\max}=200\\text{ W}, P_{\\min}=-200\\text{ W}, f_p=120\\text{ Hz}\\"
+                        "$\\theta = 0^{\\circ}, P = 200\\text{ W}, P_{\\max} = 400\\text{ W}, P_{\\min} = 0\\text{ W}, f_p = 120\\text{ Hz}$",
+                        "$\\theta = 0^{\\circ}, P = 200\\text{ W}, P_{\\max} = 200\\text{ W}, P_{\\min} = -200\\text{ W}, f_p = 60\\text{ Hz}$",
+                        "$\\theta = 90^{\\circ}, P = 0\\text{ W}, P_{\\max} = 400\\text{ W}, P_{\\min} = -400\\text{ W}, f_p = 120\\text{ Hz}$"
                     ],
                     correct: 0
                 }
             },
             {
                 id: 3,
-                title: "例題 10-4 視在功率計算",
-                desc: "某單相交流電路，當接於 \\(\\bar{V} = 10\\angle 60^\\circ\\text{ V}\\) 電源電壓時，若產生電源電流 \\(\\bar{I} = 10\\angle 15^\\circ\\text{ A}\\)，問該電路之視在功率 \\(S\\) 為何？",
+                title: "例題 10-4 視在功率",
+                desc: "某單相交流電路，當接於 $\\bar{V} = 10\\angle 60^{\\circ}\\text{ V}$ 電源電壓時，若產生電源電流 $\\bar{I} = 10\\angle 15^{\\circ}\\text{ A}$，問該電路之視在功率 $S$ 為何？",
                 mode1_steps: [
-                    { q: "【核心戰術】求視在功率 \\(S\\) 時，需要考慮角度相減嗎？", a: ["不需要，直接將電壓與電流的有效值大小相乘即可", "需要，必須乘以 \\(\\cos(60^\\circ-15^\\circ)\\)", "需要，必須用複數極座標進行乘法運算"], correct: 0 }
+                    { q: "步驟一：求視在功率 $S$ 是否需要導入角度運算？", a: ["不需要，直接將電壓與電流有效值大小相乘 $S = VI$", "需要，必須帶入角度相減計算虛功"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出計算本題視在功率 \\(S\\) 的公式與死記答案：",
+                    q: "請選擇正確的計算過程公式與答案：",
                     a: [
-                        "\\(S = VI = 10 \\times 10 = 100\\text{ VA}\\)",
-                        "\\(S = VI\\cos\\theta = 10 \\times 10 \\times \\cos 45^\\circ = 50\\sqrt{2}\\text{ VA}\\)",
-                        "\\(S = \\frac{V}{I} = 1\\text{ VA}\\"
+                        "$S = VI = 10 \\times 10 = 100\\text{ VA}$",
+                        "$S = VI\\cos(60^{\\circ}-15^{\\circ}) = 50\\sqrt{2}\\text{ VA}$",
+                        "$S = \\frac{V}{I} = 1\\angle 45^{\\circ}\\ \\Omega$"
                     ],
                     correct: 0
                 }
@@ -234,18 +244,18 @@
             {
                 id: 4,
                 title: "例題 10-5 交流電路綜合功率",
-                desc: "某單相交流電路，接於 \\(v(t) = 10\\sqrt{2}\\sin(377t)\\text{ V}\\) 電源電壓時，若產生 \\(i(t) = 5\\sqrt{2}\\sin(377t - 60^\\circ)\\text{ A}\\) 的電路電流，試求其 \\(S, P, Q\\)。",
+                desc: "某單相交流電路，當接於 $v(t) = 10\\sqrt{2}\\sin(377t)\\text{ V}$ 電源電壓時，若產生 $i(t) = 5\\sqrt{2}\\sin(377t - 60^{\\circ})\\text{ A}$ 的電路電流，試求該電路之 (1) $S$ (2) $P$ (3) $Q$。",
                 mode1_steps: [
-                    { q: "【第一步戰術】提取有效值大小與角度差 \\(\\theta\\)？", a: ["\\(V=10\\text{ V}, I=5\\text{ A}, \\theta=0^\\circ - (-60^\\circ) = 60^\\circ\\)", "\\(V=10\\sqrt{2}\\text{ V}, I=5\\sqrt{2}\\text{ A}, \\theta=-60^\\circ\\)", "\\(V=10\\text{ V}, I=5\\text{ A}, \\theta=-60^\\circ\\)"], correct: 0 },
-                    { q: "【第二步戰術】計算視在功率 \\(S\\) 與平均功率 \\(P\\)？", a: ["\\(S = 50\\text{ VA}, P = 50 \\times \\cos 60^\\circ = 25\\text{ W}\\)", "\\(S = 25\\text{ VA}, P = 12.5\\text{ W}\\)", "\\(S = 50\\text{ VA}, P = 50\\text{ W}\\"], correct: 0 },
-                    { q: "【第三步戰術】計算虛功率 \\(Q\\)？", a: ["\\(Q = VI\\sin 60^\\circ = 50 \\times \\frac{\\sqrt{3}}{2} = 25\\sqrt{3}\\text{ VAR}\\)", "\\(Q = 25\\text{ VAR}\\", "\\(Q = 50\\text{ VAR}\\"], correct: 0 }
+                    { q: "步驟一：提取有效值大小並計算相位角差 $\\theta$？", a: ["$V = 10\\text{ V}, I = 5\\text{ A}, \\theta = 0^{\\circ} - (-60^{\\circ}) = 60^{\\circ}$", "$V = 10\\sqrt{2}\\text{ V}, I = 5\\sqrt{2}\\text{ A}, \\theta = -60^{\\circ}$"], correct: 0 },
+                    { q: "步驟二：求出視在功率 $S$ 與平均功率 $P$？", a: ["$S = VI = 50\\text{ VA}, P = VI\\cos\\theta = 10 \\times 5 \\times \\cos 60^{\\circ} = 25\\text{ W}$", "$S = 50\\text{ VA}, P = 50\\text{ W}$"], correct: 0 },
+                    { q: "步驟三：求出虛功率 $Q$？", a: ["$Q = VI\\sin\\theta = 10 \\times 5 \\times \\sin 60^{\\circ} = 25\\sqrt{3}\\text{ VAR}$", "$Q = 25\\text{ VAR}$"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出本題綜合功率 \\((S, P, Q)\\) 的完整死記答案鏈：",
+                    q: "請選擇本題三項功率綜合答案鏈：",
                     a: [
-                        "\\(S = 50\\text{ VA}, P = 25\\text{ W}, Q = 25\\sqrt{3}\\text{ VAR}\\)",
-                        "\\(S = 50\\text{ VA}, P = 25\\sqrt{3}\\text{ W}, Q = 25\\text{ VAR}\\)",
-                        "\\(S = 100\\text{ VA}, P = 50\\text{ W}, Q = 50\\sqrt{3}\\text{ VAR}\\"
+                        "$S = 50\\text{ VA}, P = 25\\text{ W}, Q = 25\\sqrt{3}\\text{ VAR}$",
+                        "$S = 50\\text{ VA}, P = 25\\sqrt{3}\\text{ W}, Q = 25\\text{ VAR}$",
+                        "$S = 100\\text{ VA}, P = 50\\text{ W}, Q = 50\\sqrt{3}\\text{ VAR}$"
                     ],
                     correct: 0
                 }
@@ -253,75 +263,70 @@
             {
                 id: 5,
                 title: "例題 10-6 純電容電路之電功率",
-                desc: "純電容交流電路，若負載 \\(C = 20\\ \\mu\\text{F}\\)，當接於 \\(v(t) = 200\\sqrt{2}\\sin(1000t)\\text{ V}\\) 時，求其各項功率參數。",
+                desc: "如圖所示之純電容交流電路，若負載 $C = 20\\ \\mu\\text{F}$，當接於 $v(t) = 200\\sqrt{2}\\sin(1000t)\\text{ V}$ 電源電壓時，試求該電路之 (1) $S$ (2) $P$ (3) $Q_C$ (4) $P_{\\max}$ (5) $P_{\\min}$ (6) $f_p$。",
                 mode1_steps: [
-                    { q: "【第一步戰術】如何求出容抗 \\(X_C\\) 與電流有效值 \\(I\\)？", a: ["\\(X_C = \\frac{1}{1000 \\times 20 \\times 10^{-6}} = 50\\ \\Omega \\rightarrow I = \\frac{200}{50} = 4\\text{ A}\\)", "\\(X_C = 1000 \\times 20 = 20000\\ \\Omega\\)", "\\(X_C = 50\\ \\Omega \\rightarrow I = 4\\sqrt{2}\\text{ A}\\"], correct: 0 },
-                    { q: "【第二步戰術】純電容不消耗實功率，那它的 \\(S\\) 與 \\(Q_C\\) 為何？", a: ["\\(S = 800\\text{ VA}, Q_C = -800\\text{ VAR}\\) (角度為 \\(-90^\\circ\\))", "\\(S = 800\\text{ VA}, Q_C = 800\\text{ VAR}\\", "\\(S = 400\\text{ VA}, Q_C = -400\\text{ VAR}\\"], correct: 0 },
-                    { q: "【第三步戰術】求其功率頻率 \\(f_p\\) (提示：對照課本 318 特殊數字)？", a: ["\\(f_p = 2f = 2 \\times 159 = 318\\text{ Hz}\\)", "\\(f_p = 1000\\text{ Hz}\\", "\\(f_p = 60\\text{ Hz}\\"], correct: 0 }
+                    { q: "步驟一：求出容抗 $-jX_C$ 與電流相量 $\\bar{I}$？", a: ["$-jX_C = -j50\\ \\Omega \\rightarrow \\bar{I} = 4\\angle 90^{\\circ}\\text{ A}$", "$-jX_C = -j10\\ \\Omega \\rightarrow \\bar{I} = 20\\angle 90^{\\circ}\\text{ A}$"], correct: 0 },
+                    { q: "步驟二：計算各類功率參數，純電容的實功與虛功分別為何？", a: ["$P = 0\\text{ W}, Q_C = VI\\sin(-90^{\\circ}) = -800\\text{ VAR}, S = 800\\text{ VA}$", "$P = 800\\text{ W}, Q_C = 0\\text{ VAR}, S = 800\\text{ VA}$"], correct: 0 },
+                    { q: "步驟三：求出功率頻率 $f_p$（配合特殊數字）？", a: ["$f = \\frac{1000}{2\\times 3.14} = 159\\text{ Hz} \\rightarrow f_p = 2f = 318\\text{ Hz}$", "$f_p = 1000\\text{ Hz}$"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出純電容電路 \\((C=20\\mu\\text{F}, \\omega=1000)\\) 的完整死記答案鏈：",
+                    q: "請選擇純電容電路完整死記數值結構：",
                     a: [
-                        "\\(S=800\\text{ VA}, P=0\\text{ W}, Q_C=-800\\text{ VAR}, P_{\\max}=800\\text{ W}, P_{\\min}=-800\\text{ W}, f_p=318\\text{ Hz}\\)",
-                        "\\(S=800\\text{ VA}, P=800\\text{ W}, Q_C=0\\text{ VAR}, P_{\\max}=800\\text{ W}, P_{\\min}=0\\text{ W}, f_p=318\\text{ Hz}\\)",
-                        "\\(S=400\\text{ VA}, P=0\\text{ W}, Q_C=-400\\text{ VAR}, P_{\\max}=400\\text{ W}, P_{\\min}=-400\\text{ W}, f_p=160\\text{ Hz}\\"
+                        "$S = 800\\text{ VA}, P = 0\\text{ W}, Q_C = -800\\text{ VAR}, P_{\\max} = 800\\text{ W}, P_{\\min} = -800\\text{ W}, f_p = 318\\text{ Hz}$",
+                        "$S = 800\\text{ VA}, P = 800\\text{ W}, Q_C = 0\\text{ VAR}, P_{\\max} = 800\\text{ W}, P_{\\min} = 0\\text{ W}, f_p = 159\\text{ Hz}$"
                     ],
                     correct: 0
                 }
             },
             {
                 id: 6,
-                title: "例題 10-8 功率因數與三角形反推",
-                desc: "某單相交流電路，當電源供應 \\(S = 15\\text{ kVA}\\) 之電力時，若電路的虛功率 \\(Q = 9\\text{ kVAR}\\)（電容性），試求該電路之功率因數 \\(PF\\)。",
+                title: "例題 10-8 功率因數三角形反推",
+                desc: "某單相交流電路，當電源供應 $S = 15\\text{ kVA}$ 之電力時，若電路的虛功率 $Q = 9\\text{ kVAR}$（電容性），試求該電路之功率因數 $PF$。",
                 mode1_steps: [
-                    { q: "【第一步戰術】利用畢氏定理（黃金比例 3:4:5），實功率 \\(P\\) 是多少？", a: ["\\(P = \\sqrt{15^2 - 9^2} = 12\\text{ kW}\\)", "\\(P = 15 - 9 = 6\\text{ kW}\\", "\\(P = \\sqrt{15^2 + 9^2} = 17.49\\text{ kW}\\"], correct: 0 },
-                    { q: "【第二步戰術】計算功率因數 \\(PF\\) 且題目著名「電容性」，代表功因如何？", a: ["\\(PF = \\frac{12}{15} = 0.8\\)（超前功因）", "\\(PF = 0.8\\)（滯後功因）", "\\(PF = \\frac{9}{15} = 0.6\\)（超前功因）"], correct: 0 }
+                    { q: "步驟一：利用畢氏定理求出實功率 $P$ 數值？", a: ["$P = \\sqrt{S^2 - Q^2} = \\sqrt{15^2 - 9^2} = 12\\text{ kW}$", "$P = 15 - 9 = 6\\text{ kW}$"], correct: 0 },
+                    { q: "步驟二：計算功率因數並判定其超前或滯後？", a: ["$PF = \\frac{P}{S} = \\frac{12}{15} = 0.8$（因電容性，故為超前功因）", "$PF = \\frac{12}{15} = 0.8$（因電容性，故為滯後功因）"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出本題功率因數 \\(PF\\) 的計算公式與正確超前/滯後答案：",
+                    q: "請選擇本題正確的公式推導與最終答案：",
                     a: [
-                        "\\(P=\\sqrt{15^2-9^2}=12\\text{ kW} \\rightarrow PF=\\frac{P}{S}=\\frac{12}{15}=0.8\\)（超前功因）",
-                        "\\(P=12\\text{ kW} \\rightarrow PF=\\frac{12}{15}=0.8\\)（滯後功因）",
-                        "\\(PF=\\frac{Q}{S}=\\frac{9}{15}=0.6\\)（超前功因）"
+                        "$P = \\sqrt{15^2 - 9^2} = 12\\text{ kW} \\rightarrow PF = \\frac{12}{15} = 0.8$（超前功因）",
+                        "$P = 12\\text{ kW} \\rightarrow PF = \\frac{12}{15} = 0.8$（滯後功因）",
+                        "$PF = \\frac{Q}{S} = \\frac{9}{15} = 0.6$（超前功因）"
                     ],
                     correct: 0
                 }
             },
             {
                 id: 7,
-                title: "例題 10-9 串並聯功因大魔王關係式",
-                desc: "如課本圖所示之 \\(RL\\) 串聯與並聯電路，已知 \\(R=6\\ \\Omega, X_L=8\\ \\Omega\\)。試求串聯功因 \\(PF_s\\)、並聯功因 \\(PF_p\\) 及兩者關係。",
+                title: "例題 10-9 串並聯功率因數大魔王關係式",
+                desc: "已知一負載具有 $R = 6\\ \\Omega$ 與 $X_L = 8\\ \\Omega$。試求其 (1) 串聯時之功率因數 $PF_s$ (2) 並聯時之功率因數 $PF_p$ (3) $PF_s$ 與 $PF_p$ 之關係為何？",
                 mode1_steps: [
-                    { q: "【第一步戰術】看到 6 和 8 阻抗斜邊為 10，串聯功因 \\(PF_s\\) 直接秒殺？", a: ["\\(PF_s = \\frac{R}{Z} = \\frac{6}{10} = 0.6\\)", "\\(PF_s = 0.8\\)", "\\(PF_s = \\frac{8}{6} = 1.33\\)"], correct: 0 },
-                    { q: "【第二步戰術】元件相同改為並聯時，並聯功因 \\(PF_p\\) 為何？", a: ["\\(PF_p = 0.8\\) (與串聯互補對調)", "\\(PF_p = 0.6\\)", "\\(PF_p = 1.0\\)"], correct: 0 },
-                    { q: "【第三步戰術】兩者的平方和具備什麼黃金關係式（公式 10-12）？", a: ["\\(PF_s^2 + PF_p^2 = 1\\)", "\\(PF_s + PF_p = 1\\)", "\\(PF_s \\times PF_p = 1\\)"], correct: 0 }
+                    { q: "步驟一：計算串聯電路之功率因數 $PF_s$？", a: ["$PF_s = \\frac{R}{Z_s} = \\frac{6}{\\sqrt{6^2 + 8^2}} = 0.6$", "$PF_s = 0.8$"], correct: 0 },
+                    { q: "步驟二：計算並聯電路之功率因數 $PF_p$？", a: ["$PF_p = \\frac{G}{Y} = \\frac{8}{\\sqrt{6^2 + 8^2}} = 0.8$", "$PF_p = 0.6$"], correct: 0 },
+                    { q: "步驟三：寫出兩者串並聯公式 10-12 的終極核心關係式？", a: ["$PF_s^2 + PF_p^2 = 1$", "$PF_s + PF_p = 1.4$"], correct: 0 }
                 ],
                 mode2_match: {
-                    q: "請選出本串並聯大魔王題的終極數值與公式結論：",
+                    q: "請選擇本大魔王題型正確的數據結論與公式關係式：",
                     a: [
-                        "\\(PF_s = 0.6,\\, PF_p = 0.8,\\, \\text{關係式：} PF_s^2 + PF_p^2 = 1\\)",
-                        "\\(PF_s = 0.8,\\, PF_p = 0.6,\\, \\text{關係式：} PF_s^2 + PF_p^2 = 1\\)",
-                        "\\(PF_s = 0.6,\\, PF_p = 0.8,\\, \\text{關係式：} PF_s + PF_p = 1.4\\)"
+                        "$PF_s = 0.6,\\, PF_p = 0.8,\\, \\text{關係式：} PF_s^2 + PF_p^2 = 1$",
+                        "$PF_s = 0.8,\\, PF_p = 0.6,\\, \\text{關係式：} PF_s^2 + PF_p^2 = 1$",
+                        "$PF_s = 0.6,\\, PF_p = 0.8,\\, \\text{關係式：} PF_s + PF_p = 1.4$"
                     ],
                     correct: 0
                 }
             }
         ];
 
-        // 全域狀態控制
         let currentMode = 1;
         let quizQuestions = [];
         let currentQuestionIdx = 0;
-        let currentStepIdx = 0; // 用於模式 1 的多步驟追蹤
+        let currentStepIdx = 0;
         let wrongQuestionsLog = [];
         let totalAnswered = 0;
         let totalCorrect = 0;
-        let isReviewMode = false;
 
-        // 啟動測驗
         function startQuiz(mode) {
             currentMode = mode;
-            isReviewMode = false;
             quizQuestions = [...allQuestions];
             currentQuestionIdx = 0;
             currentStepIdx = 0;
@@ -336,7 +341,6 @@
             showQuestion();
         }
 
-        // 顯示題目與選項
         function showQuestion() {
             if (currentQuestionIdx >= quizQuestions.length) {
                 showResult();
@@ -348,7 +352,7 @@
             document.getElementById("score-track").innerText = `目前正確率: ${totalAnswered === 0 ? 100 : Math.round((totalCorrect / totalAnswered) * 100)}%`;
             document.getElementById("progress-fill").style.width = `${((currentQuestionIdx) / quizQuestions.length) * 100}%`;
             
-            document.getElementById("question-title").innerText = qData.title;
+            document.getElementById("question-title").innerHTML = `<span class="important-text">${qData.title}</span>`;
             document.getElementById("question-content").innerHTML = qData.desc;
             document.getElementById("feedback-hint").className = "hint";
             document.getElementById("next-btn").style.display = "none";
@@ -357,12 +361,10 @@
             optionsContainer.innerHTML = "";
 
             if (currentMode === 1) {
-                // 模式 1：多步驟模式
                 const stepData = qData.mode1_steps[currentStepIdx];
                 const stepTitle = document.createElement("p");
                 stepTitle.style.fontWeight = "bold";
-                stepTitle.style.color = "var(--primary)";
-                stepTitle.innerText = stepData.q;
+                stepTitle.innerHTML = stepData.q;
                 optionsContainer.appendChild(stepTitle);
 
                 stepData.a.forEach((optionText, index) => {
@@ -373,11 +375,10 @@
                     optionsContainer.appendChild(btn);
                 });
             } else {
-                // 模式 2：直接匹配公式與答案
                 const matchData = qData.mode2_match;
                 const matchTitle = document.createElement("p");
                 matchTitle.style.fontWeight = "bold";
-                matchTitle.innerText = matchData.q;
+                matchTitle.innerHTML = matchData.q;
                 optionsContainer.appendChild(matchTitle);
 
                 matchData.a.forEach((optionText, index) => {
@@ -389,13 +390,11 @@
                 });
             }
             
-            // 重新觸發 MathJax 渲染公式
             if (window.MathJax) {
                 MathJax.typesetPromise();
             }
         }
 
-        // 檢查答案 (模式1)
         function checkAnswerMode1(selectedIndex, correctIndex) {
             totalAnswered++;
             const feedback = document.getElementById("feedback-hint");
@@ -403,10 +402,9 @@
             
             if (selectedIndex === correctIndex) {
                 totalCorrect++;
-                feedback.innerText = "🎯 完全正確！邏輯完全通順！";
+                feedback.innerText = "正確";
                 feedback.className = "hint correct";
                 
-                // 停頓一下自動進入下一步驟或下一題
                 setTimeout(() => {
                     currentStepIdx++;
                     if (currentStepIdx < qData.mode1_steps.length) {
@@ -416,15 +414,14 @@
                         currentQuestionIdx++;
                         showQuestion();
                     }
-                }, 1000);
+                }, 600);
             } else {
-                feedback.innerText = "❌ 選錯了！這步邏輯不對，請仔細比對課本標準步驟，再試一次！";
+                feedback.innerText = "錯誤，步驟邏輯不符，請重新選取。";
                 feedback.className = "hint wrong";
                 logWrongQuestion(qData);
             }
         }
 
-        // 檢查答案 (模式2)
         function checkAnswerMode2(selectedIndex, correctIndex) {
             totalAnswered++;
             const feedback = document.getElementById("feedback-hint");
@@ -432,11 +429,11 @@
             
             if (selectedIndex === correctIndex) {
                 totalCorrect++;
-                feedback.innerText = "🎯 答對了！核心公式與答案烙印成功！";
+                feedback.innerText = "正確";
                 feedback.className = "hint correct";
                 document.getElementById("next-btn").style.display = "block";
             } else {
-                feedback.innerText = "❌ 數字或公式選錯！請看清關鍵字，再選一次！";
+                feedback.innerText = "錯誤，公式或答案數值不符，請重新選取。";
                 feedback.className = "hint wrong";
                 logWrongQuestion(qData);
             }
@@ -453,7 +450,6 @@
             showQuestion();
         }
 
-        // 顯示面板報告
         function showResult() {
             document.getElementById("quiz-view").classList.remove("active");
             document.getElementById("result-view").classList.add("active");
@@ -465,17 +461,14 @@
             const retryBtn = document.getElementById("retry-wrong-btn");
 
             if (rate === 100) {
-                comment.innerText = "太狂了！你已經把這些題目的解法與死記答案徹底灌進腦袋，期末考滿分穩了！";
-                comment.style.color = "var(--success)";
+                comment.innerHTML = "所有題型公式與死記數據已完全掌握。";
                 retryBtn.style.display = "none";
             } else {
-                comment.innerText = `有些地方粗心或記錯囉！目前還留有 ${wrongQuestionsLog.length} 題錯題。`;
-                comment.style.color = "var(--text)";
+                comment.innerHTML = `尚有 <span class="important-text">${wrongQuestionsLog.length}</span> 題錯誤題型需要修正。`;
                 retryBtn.style.display = "block";
             }
         }
 
-        // 錯題重新測試功能
         function retryWrongQuestions() {
             quizQuestions = [...wrongQuestionsLog];
             wrongQuestionsLog = [];
@@ -483,7 +476,6 @@
             currentStepIdx = 0;
             totalAnswered = 0;
             totalCorrect = 0;
-            isReviewMode = true;
 
             document.getElementById("result-view").classList.remove("active");
             document.getElementById("quiz-view").classList.add("active");
@@ -495,10 +487,9 @@
             document.getElementById("menu-view").classList.add("active");
         }
 
-
-        // ================= 番茄鐘核心邏輯 =================
+        // 番茄鐘計時模組邏輯
         let timerInstance = null;
-        let timeRemaining = 25 * 60; // 25分鐘
+        let timeRemaining = 25 * 60;
         let isBreak = false;
         let timerRunning = true;
 
@@ -521,13 +512,11 @@
                     
                     if (timeRemaining === 0) {
                         if (!isBreak) {
-                            // 觸發強制休息 5 分鐘
                             isBreak = true;
                             timeRemaining = 5 * 60;
-                            document.getElementById("timer-label").innerText = "☕ 休息時間";
+                            document.getElementById("timer-label").innerText = "休息時間";
                             document.getElementById("break-modal").style.display = "flex";
                         } else {
-                            // 休息結束，返回專注
                             closeBreakModal();
                         }
                     }
@@ -548,10 +537,8 @@
         }
 
         function skipTimer() {
-            if(confirm("確定要關閉/跳過當前的計時鐘嗎？")) {
-                clearInterval(timerInstance);
-                document.getElementById("time-display").innerText = "已關閉";
-            }
+            clearInterval(timerInstance);
+            document.getElementById("time-display").innerText = "關閉";
         }
 
         function closeBreakModal() {
@@ -562,7 +549,6 @@
             updateTimerDisplay();
         }
 
-        // 初始化番茄鐘
         startTimerLifecycle();
     </script>
 </body>
