@@ -3,554 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>交流電路功率進階評量系統 - 基本電學第10章</title>
+    <title>跨學科數據測驗系統</title>
+
     <script>
         window.MathJax = {
-            tex: {
-                inlineMath: [['\\(', '\\)']],
-                displayMath: [['\\[', '\\]']],
-                processEscapes: true
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-            }
+            tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], processEscapes: true },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/browser.js"></script>
-    
-    <script src="questions.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 
     <style>
-        :root {
-            --bg: #000000;
-            --text: #ffffff;
-            --important: #ff0000;
-            --card-bg: #111111;
-            --border: #333333;
-            --btn-bg: #1a1a1a;
-            --btn-hover: #2a2a2a;
-            --disabled: #555555;
-            --correct-green: #00ff00;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 850px;
-            background: var(--card-bg);
-            padding: 35px;
-            border: 1px solid var(--border);
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-        .timer-banner {
-            display: none; 
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 12px 24px;
-            width: 100%;
-            max-width: 850px;
-            box-sizing: border-box;
-        }
-        .timer-controls button {
-            background: var(--btn-bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 6px 14px;
-            margin-left: 5px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .timer-controls button:hover {
-            background: var(--btn-hover);
-        }
-        .mode-select, .quiz-section, .result-section { display: none; }
-        .active { display: block; }
-        
-        /* 容易操作的可視化按鈕設計 */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            margin: 14px 0;
-            background: var(--btn-bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            font-size: 15px;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
-        }
-        .btn:hover:not(:disabled) { 
-            background: var(--btn-hover); 
-            border-color: #555555;
-        }
-        .btn:disabled {
-            background: #0a0a0a;
-            color: var(--disabled);
-            border-color: #222222;
-            cursor: not-allowed;
-        }
-        .btn-center { text-align: center; }
-        
-        /* 動態回饋邊框：對、錯狀態一目了然 */
-        .btn.opt-correct { border-color: var(--correct-green) !important; background: #002200; }
-        .btn.opt-wrong { border-color: var(--important) !important; background: #220000; }
-
-        .important-text {
-            color: var(--important);
-            font-weight: bold;
-        }
-        .hint {
-            padding: 15px;
-            margin: 15px 0;
-            border: 1px solid var(--border);
-            font-size: 14px;
-            font-weight: bold;
-            display: none;
-        }
-        .hint.correct { border-color: var(--correct-green); color: var(--correct-green); display: block; }
-        .hint.wrong { border-color: var(--important); color: var(--important); display: block; }
-        
-        .progress-bar {
-            height: 4px;
-            background: #222222;
-            overflow: hidden;
-            margin-bottom: 25px;
-        }
-        .progress-fill { height: 100%; background: var(--important); width: 0%; transition: width 0.3s; }
-        .latex-box {
-            background: #050505;
-            border: 1px solid var(--border);
-            padding: 20px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-            line-height: 1.6;
-            font-size: 16px;
-        }
-        
-        .terms-box {
-            background: #050505;
-            border: 1px solid var(--border);
-            padding: 20px;
-            height: 250px;
-            overflow-y: scroll;
-            font-size: 14px;
-            line-height: 1.8;
-            color: #cccccc;
-            margin-bottom: 20px;
-        }
-        .terms-box h4 {
-            color: #ffffff;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        .checkbox-container input {
-            margin-right: 10px;
-            cursor: pointer;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--important);
-            padding: 35px;
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
-        }
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 15px; user-select: none; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .code-input { width: 90%; padding: 12px; font-size: 1.1em; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; }
+        .main-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; color: white; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        .hidden { display: none; }
+        .question-card { text-align: left; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px; background: #fff; }
+        .opt-btn { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; background: #fff; text-align: left; cursor: pointer; }
+        .opt-btn.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
+        .review-card { text-align: left; border-left: 5px solid #eee; padding: 15px; margin-bottom: 15px; background: #fafafa; }
+        #timer-box { font-size: 1.1em; color: var(--error); font-weight: bold; background: #fff0f0; padding: 5px 10px; border-radius: 5px; border: 1px solid var(--error); }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false">
 
-    <div id="timer-banner-area" class="timer-banner">
-        <div><span id="timer-label">當前評量週期</span>: <span id="time-display" style="font-family: monospace; font-size: 18px; font-weight: bold;">25:00</span></div>
-        <div class="timer-controls">
-            <button onclick="toggleTimer()">暫停 / 開始</button>
-            <button onclick="resetTimer()">重設 25 分鐘</button>
-            <button onclick="skipTimer()">終止計時</button>
+<div class="container">
+    <div id="login-screen">
+        <h2>模擬題測系統</h2>
+        <div class="input-group">
+            <input type="text" id="user-name" class="code-input" placeholder="考生姓名">
+            <input type="text" id="quiz-code" class="code-input" placeholder="請輸入代碼 (例: test01)">
+            <div id="password-area" class="hidden">
+                <input type="password" id="quiz-pass" class="code-input" placeholder="輸入題庫密碼">
+            </div>
+            <div id="status-msg" style="color:var(--secondary); font-size: 0.85em; margin: 10px 0;">等待讀取伺服器題庫檔案...</div>
         </div>
+        <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#ccc;" disabled>進入測驗</button>
     </div>
 
-    <div class="container">
-        
-        <div id="terms-view" class="active">
-            <h2 style="text-align: center; margin-bottom: 10px; font-weight: 500;">受測者服務條款與評量合規聲明</h2>
-            <p style="text-align: center; color: #888888; font-size: 14px; margin-bottom: 30px;">在進入基本電學第十章評量系統前，請務必審閱下列學術合規條款</p>
-            
-            <div class="terms-box">
-                <p>歡迎使用「交流電路功率進階評量系統」（以下簡稱本系統）。本系統旨在協助受測者檢視對於基本電學（Ⅱ）第十章之學術掌握度。當您點擊「同意條款並進入全螢幕評量」時，即視為您已完全理解並接受下列所有規範：</p>
-                
-                <h4>第一條：評量結果之學術客觀性與免責聲明</h4>
-                <p>1. 本系統所提供之測驗數據、答題正確率及終端綜合報告，均基於受測者線上即時作答表現之演算結果，僅供學術自評與學習診斷參考。</p>
-                <p>2. 本系統之任何技術評量結果，<span class="important-text">均不對任何國家考試、期末正式評量、專業證照檢定之最終成績做出明示 or 暗示之成果保障</span>。受測者若因個人理解偏差、操作失誤或自身學術能力所致之實體考試成績表現不佳，本系統及其開發者概不承擔任何法律責任、行政責任或補償義務。</p>
-                
-                <h4>第二條：受測者勘誤與主動回報義務</h4>
-                <p>1. 基於對電學教育之嚴謹性要求，本系統內所有試題之電路圖量值、時域相量函數及核心 LaTeX 公式均經過校對。然鑑於網頁動態渲染與瀏覽器相容性之不確定性，受測者於評量過程中，<span class="important-text">如發現任何試題文本出錯、公式渲染遺失或電路物理邏輯漏洞，有義務立即向開發者提出勘誤回報</span>。</p>
-                <p>2. 受測者不得利用系統已知漏洞或公式顯示錯誤規避正常評量程序，維持學術誠信為本系統最高宗旨。</p>
-                
-                <h4>第三條：強制全螢幕評量環境</h4>
-                <p>為確保評量過程之專注度並模擬國家考試之封閉性環境，本系統啟動後將強制請求調用瀏覽器全螢幕 API。受測者於評量期間內應避免切換視窗或解除全螢幕狀態，以獲得最客觀之專注週期檢測數據。</p>
-            </div>
-
-            <div class="checkbox-container">
-                <label><input type="checkbox" id="agree-checkbox" onchange="validateAgreement()"> 我已充分閱讀、理解並願意遵守上述所有受測者條款與學術免責聲明</label>
-            </div>
-            
-            <button id="start-assess-btn" class="btn btn-center" style="border-color: var(--important);" disabled onclick="acceptTermsAndFullscreen()">同意條款並進入全螢幕評量</button>
+    <div id="quiz-ui" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <span id="quiz-header" style="font-weight:bold;">載入中...</span>
+            <div id="timer-box">⏳ <span id="time-left">00:00</span></div>
         </div>
-
-        <div id="menu-view" class="mode-select">
-            <h2 style="text-align: center; margin-bottom: 10px; font-weight: 500;">交流電路功率進階評量系統</h2>
-            <p style="text-align: center; color: #888888; font-size: 14px; margin-bottom: 40px;">科目：基本電學（Ⅱ）&nbsp;&nbsp;|&nbsp;&nbsp;範疇：第十章 交流電路功率</p>
-            
-            <button class="btn btn-center" onclick="startQuiz(1)">模組一：解題邏輯與步驟評量</button>
-            <p style="color:#888888; font-size:13px; margin-top:-8px; margin-bottom:25px; padding-left:10px;">引導式架構。針對核心題型進行分段邏輯推理，藉以檢視各步驟之公式推導是否正確。</p>
-            
-            <button class="btn btn-center" onclick="startQuiz(2)">模組二：核心公式與綜合推導評量</button>
-            <p style="color:#888888; font-size:13px; margin-top:-8px; margin-bottom:25px; padding-left:10px;">綜合式架構。直接由題目文本切入核心算式，全面評估公式整合能力與最終量值計算之精確度。</p>
-        </div>
-
-        <div id="quiz-view" class="quiz-section">
-            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-            <div style="display: flex; justify-content: space-between; color: #888888; font-size: 13px;">
-                <span id="question-index">進度：項目 1 / 7</span>
-                <span id="score-track">當前答題正確率: 100%</span>
-            </div>
-            <h3 id="question-title" style="margin-top: 20px; font-weight: 500;"></h3>
-            <div class="latex-box" id="question-content"></div>
-            
-            <div id="options-container"></div>
-            <div id="feedback-hint" class="hint"></div>
-            <button id="next-btn" class="btn btn-center" style="border-color: var(--important); display:none;" onclick="handleNextStepClick()">點擊前進</button>
-        </div>
-
-        <div id="result-view" class="result-section" style="text-align: center;">
-            <h2 style="font-weight: 500;">評量結果報告</h2>
-            <div style="font-size: 54px; font-weight: bold; color: var(--important); margin: 25px 0;" id="accuracy-rate">0%</div>
-            <p id="result-comment" style="font-size: 16px; margin-bottom: 35px; color: #bbbbbb;"></p>
-            <button class="btn btn-center" style="border-color:#00ff00;" onclick="retryWrongQuestions()" id="retry-wrong-btn">針對錯誤項目進行重新評量</button>
-            <button class="btn btn-center" style="border-color:#888888;" onclick="backToMenu()">返回課程主選單</button>
-        </div>
+        <div id="quiz-container"></div>
+        <button class="main-btn" style="background:var(--primary);" onclick="confirmSubmit()">提交作答</button>
     </div>
 
-    <div id="break-modal" class="modal">
-        <div class="modal-content">
-            <h2 class="important-text" style="font-weight: 500; margin-top: 0;">專注週期結束</h2>
-            <p style="font-size:15px; color:#bbbbbb; line-height: 1.5;">已達階段性專注上限，請遵循規範停止操作，進行 5 分鐘之大腦認知修復。</p>
-            <div style="font-size:42px; font-weight:bold; margin:25px 0; font-family:monospace; color:#ffffff;" id="break-time-display">05:00</div>
-            <button class="btn btn-center" style="border-color:var(--important); margin-bottom: 0;" onclick="closeBreakModal()">提前解除終止狀態</button>
-        </div>
+    <div id="result-screen" class="hidden">
+        <h2>📊 結算報告</h2>
+        <h1 id="final-score" style="font-size: 4em; color:var(--secondary);">0</h1>
+        <p id="pass-status" style="font-weight:bold;"></p>
+        <button class="main-btn" style="background:#95a5a6;" onclick="location.reload()">返回登入</button>
+        <div id="review-area" style="margin-top:20px; border-top:2px solid #ddd; padding-top:15px;"></div>
     </div>
+</div>
 
-    <script>
-        let currentMode = 1;
-        let quizQuestions = [];
-        let currentQuestionIdx = 0;
-        let currentStepIdx = 0;
-        let wrongQuestionsLog = [];
-        let totalAnswered = 0;
-        let totalCorrect = 0;
-        let hasAnsweredCurrentNode = false; 
+<script>
+    let quizActive = false, cheats = 0;
+    let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
 
-        function validateAgreement() {
-            const isChecked = document.getElementById("agree-checkbox").checked;
-            document.getElementById("start-assess-btn").disabled = !isChecked;
-        }
-
-        function acceptTermsAndFullscreen() {
-            const docElm = document.documentElement;
-            try {
-                if (docElm.requestFullscreen) docElm.requestFullscreen();
-                else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
-                else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
-                else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
-            } catch (e) {
-                console.log("環境不支援自動調用全螢幕，已自動跳過進入選單。");
-            }
-
-            document.getElementById("terms-view").classList.remove("active");
-            document.getElementById("menu-view").classList.add("active");
-            document.getElementById("timer-banner-area").style.display = "flex";
-            startTimerLifecycle();
-        }
-
-        function startQuiz(mode) {
-            currentMode = mode;
-            quizQuestions = [...allQuestions];
-            currentQuestionIdx = 0;
-            currentStepIdx = 0;
-            wrongQuestionsLog = [];
-            totalAnswered = 0;
-            totalCorrect = 0;
-            
-            document.getElementById("menu-view").classList.remove("active");
-            document.getElementById("result-view").classList.remove("active");
-            document.getElementById("quiz-view").classList.add("active");
-            
-            showQuestion();
-        }
-
-        // 核心渲染器：保證每次載入時 LaTeX 完全就緒並排隊轉譯
-        function showQuestion() {
-            if (currentQuestionIdx >= quizQuestions.length) {
-                showResult();
-                return;
-            }
-
-            hasAnsweredCurrentNode = false; 
-            const qData = quizQuestions[currentQuestionIdx];
-            
-            document.getElementById("question-index").innerText = `進度：項目 ${currentQuestionIdx + 1} / ${quizQuestions.length}`;
-            document.getElementById("score-track").innerText = `當前答題正確率: ${totalAnswered === 0 ? 100 : Math.round((totalCorrect / totalAnswered) * 100)}%`;
-            document.getElementById("progress-fill").style.width = `${((currentQuestionIdx) / quizQuestions.length) * 100}%`;
-            
-            document.getElementById("question-title").innerHTML = `<span class="important-text">${qData.title}</span>`;
-            document.getElementById("question-content").innerHTML = qData.desc;
-            document.getElementById("feedback-hint").className = "hint";
-            document.getElementById("next-btn").style.display = "none";
-
-            const optionsContainer = document.getElementById("options-container");
-            optionsContainer.innerHTML = "";
-
-            if (currentMode === 1) {
-                const stepData = qData.mode1_steps[currentStepIdx];
-                const stepTitle = document.createElement("p");
-                stepTitle.style.fontWeight = "500";
-                stepTitle.style.fontSize = "15px";
-                stepTitle.style.color = "#aaaaaa";
-                stepTitle.innerHTML = `<strong>當前子步驟 (${currentStepIdx + 1}/${qData.mode1_steps.length})：</strong>` + stepData.q;
-                optionsContainer.appendChild(stepTitle);
-
-                stepData.a.forEach((optionText, index) => {
-                    const btn = document.createElement("button");
-                    btn.className = "btn";
-                    btn.innerHTML = optionText;
-                    btn.onclick = (e) => checkAnswerMode1(index, stepData.correct, e.currentTarget);
-                    optionsContainer.appendChild(btn);
-                });
-            } else {
-                const matchData = qData.mode2_match;
-                const matchTitle = document.createElement("p");
-                matchTitle.style.fontWeight = "500";
-                matchTitle.style.fontSize = "15px";
-                matchTitle.style.color = "#aaaaaa";
-                matchTitle.innerHTML = matchData.q;
-                optionsContainer.appendChild(matchTitle);
-
-                matchData.a.forEach((optionText, index) => {
-                    const btn = document.createElement("button");
-                    btn.className = "btn";
-                    btn.innerHTML = optionText;
-                    btn.onclick = (e) => checkAnswerMode2(index, matchData.correct, e.currentTarget);
-                    optionsContainer.appendChild(btn);
-                });
-            }
-            
-            // 觸發 MathJax 非同步渲染任務佇列，即時轉譯新生成的 LaTeX 字元
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                MathJax.typesetPromise([document.getElementById("quiz-view")]).catch((err) => console.log("排版異常:", err.message));
-            }
-        }
-
-        function checkAnswerMode1(selectedIndex, correctIndex, targetBtn) {
-            if (hasAnsweredCurrentNode) return; 
-            hasAnsweredCurrentNode = true;
-            totalAnswered++;
-
-            const feedback = document.getElementById("feedback-hint");
-            const qData = quizQuestions[currentQuestionIdx];
-            const buttons = document.getElementById("options-container").getElementsByClassName("btn");
-            
-            for (let btn of buttons) btn.disabled = true;
-
-            if (selectedIndex === correctIndex) {
-                totalCorrect++;
-                targetBtn.classList.add("opt-correct");
-                feedback.innerText = "【評定結果：正確】推導邏輯符合學術規範，請點擊下方按鈕進入下一步驟。";
-                feedback.className = "hint correct";
-            } else {
-                targetBtn.classList.add("opt-wrong");
-                buttons[correctIndex].classList.add("opt-correct"); 
-                feedback.innerText = "【評定結果：錯誤】該步驟之電路物理邏輯或公式結構存在瑕疵。請點擊下方按鈕繼續。";
-                feedback.className = "hint wrong";
-                logWrongQuestion(qData);
-            }
-            
-            document.getElementById("next-btn").innerText = "進入下一步驟 ➜";
-            document.getElementById("next-btn").style.display = "block";
-        }
-
-        function checkAnswerMode2(selectedIndex, correctIndex, targetBtn) {
-            if (hasAnsweredCurrentNode) return;
-            hasAnsweredCurrentNode = true;
-            totalAnswered++;
-
-            const feedback = document.getElementById("feedback-hint");
-            const qData = quizQuestions[currentQuestionIdx];
-            const buttons = document.getElementById("options-container").getElementsByClassName("btn");
-
-            for (let btn of buttons) btn.disabled = true;
-
-            if (selectedIndex === correctIndex) {
-                totalCorrect++;
-                targetBtn.classList.add("opt-correct");
-                feedback.innerText = "【評定結果：正確】數值計算與公式整合完全正確，請點擊下方按鈕推進大題。";
-                feedback.className = "hint correct";
-            } else {
-                targetBtn.classList.add("opt-wrong");
-                buttons[correctIndex].classList.add("opt-correct");
-                feedback.innerText = "【評定結果：錯誤】核心算式或量值代數運算有誤。請點擊下方按鈕繼續。";
-                feedback.className = "hint wrong";
-                logWrongQuestion(qData);
-            }
-
-            document.getElementById("next-btn").innerText = "進入下一大題 ➜";
-            document.getElementById("next-btn").style.display = "block";
-        }
-
-        function handleNextStepClick() {
-            if (currentMode === 1) {
-                const qData = quizQuestions[currentQuestionIdx];
-                currentStepIdx++;
-                if (currentStepIdx < qData.mode1_steps.length) {
-                    showQuestion();
-                } else {
-                    currentStepIdx = 0;
-                    currentQuestionIdx++;
-                    showQuestion();
+    // 1. 動態偵測題庫與密碼 (自動適應所有檔案)
+    document.getElementById('quiz-code').addEventListener('input', (e) => {
+        const code = e.target.value.trim();
+        if(code) {
+            const old = document.getElementById('q-script'); if(old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'q-script'; s.src = `${code}.js`; // 對應截圖中的 .js 檔案
+            s.onload = () => {
+                if(window.currentQuiz) {
+                    document.getElementById('status-msg').innerText = `✅ 已讀取：${window.currentQuiz.name}`;
+                    if(window.currentQuiz.password) document.getElementById('password-area').classList.remove('hidden');
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('start-btn').style.background = "var(--success)";
                 }
-            } else {
-                currentQuestionIdx++;
-                showQuestion();
-            }
+            };
+            document.head.appendChild(s);
         }
+    });
 
-        function logWrongQuestion(q) {
-            if (!wrongQuestionsLog.some(item => item.id === q.id)) {
-                wrongQuestionsLog.push(q);
-            }
+    function checkAndStart() {
+        if(!document.getElementById('user-name').value.trim()) return alert("請輸入姓名");
+        if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
+            return alert("密碼錯誤");
         }
+        beginQuiz();
+    }
 
-        function showResult() {
-            document.getElementById("quiz-view").classList.remove("active");
-            document.getElementById("result-view").classList.add("active");
+    function beginQuiz() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('quiz-ui').classList.remove('hidden');
+        const quiz = window.currentQuiz;
+        document.getElementById('quiz-header').innerText = quiz.name;
 
-            const rate = totalAnswered === 0 ? 0 : Math.round((totalCorrect / totalAnswered) * 100);
-            document.getElementById("accuracy-rate").innerText = `${rate}%`;
+        // 隨機化處理
+        currentQuestions = JSON.parse(JSON.stringify(quiz.data)).sort(() => Math.random() - 0.5);
+        totalSeconds = (quiz.time || 20) * 60;
 
-            const comment = document.getElementById("result-comment");
-            const retryBtn = document.getElementById("retry-wrong-btn");
+        timerInterval = setInterval(() => {
+            totalSeconds--;
+            const mins = Math.floor(totalSeconds / 60), secs = totalSeconds % 60;
+            document.getElementById('time-left').innerText = `${mins}:${secs.toString().padStart(2,'0')}`;
+            if (totalSeconds <= 0) evalQuiz();
+        }, 1000);
+        quizActive = true;
+        renderQuiz();
+    }
 
-            if (rate === 100) {
-                comment.innerHTML = "恭喜完成本章節所有核心題型檢測。您已完全掌握交流電路功率之基礎概念、公式推導與綜合阻抗轉換邏輯。";
-                retryBtn.style.display = "none";
-            } else {
-                comment.innerHTML = `本次評量尚有 <span class="important-text">${wrongQuestionsLog.length}</span> 項核心題型未達正確指標，建議點擊下方按鈕針對不熟練的項目單獨練習。`;
-                retryBtn.style.display = "block";
-            }
-        }
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        currentQuestions.forEach((q, i) => {
+            const card = document.createElement('div'); card.className = 'question-card';
+            card.innerHTML = `<p><strong>Q${i+1}. ${q.q}</strong></p><div id="opts-${i}"></div>`;
+            container.appendChild(card);
 
-        function retryWrongQuestions() {
-            quizQuestions = [...wrongQuestionsLog];
-            wrongQuestionsLog = [];
-            currentQuestionIdx = 0;
-            currentStepIdx = 0;
-            totalAnswered = 0;
-            totalCorrect = 0;
+            q.o.forEach(opt => {
+                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = opt;
+                b.onclick = () => {
+                    userAnswers[i] = opt.match(/\(([A-D])\)/)[1];
+                    Array.from(b.parentElement.children).forEach(x => x.classList.remove('selected'));
+                    b.classList.add('selected');
+                };
+                document.getElementById(`opts-${i}`).appendChild(b);
+            });
+        });
+        if (window.MathJax) MathJax.typesetPromise([container]);
+    }
 
-            document.getElementById("result-view").classList.remove("active");
-            document.getElementById("quiz-view").classList.add("active");
-            showQuestion();
-        }
+    function confirmSubmit() { if(confirm("確定提交？")) evalQuiz(); }
 
-        function backToMenu() {
-            document.getElementById("result-view").classList.remove("active");
-            document.getElementById("menu-view").classList.add("active");
-        }
+    function evalQuiz() {
+        quizActive = false;
+        clearInterval(timerInterval);
+        document.getElementById('quiz-ui').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
 
-        // 計時器邏輯
-        let timerInstance = null;
-        let timeRemaining = 25 * 60;
-        let isBreak = false;
-        let timerRunning = true;
+        let correctCount = 0;
+        let reviewHTML = '<h3>🔍 詳細解析 (正確答案已標註)</h3>';
 
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
-            const secs = (timeRemaining % 60).toString().padStart(2, '0');
-            if (!isBreak) {
-                document.getElementById("time-display").innerText = `${mins}:${secs}`;
-            } else {
-                document.getElementById("break-time-display").innerText = `${mins}:${secs}`;
-            }
-        }
+        currentQuestions.forEach((q, i) => {
+            // 關鍵：從選項數組中找出開頭為正確代號 (A-D) 的內容
+            const correctContent = q.o.find(str => str.trim().startsWith(`(${q.a})`));
+            const isRight = userAnswers[i] === q.a;
+            if(isRight) correctCount++;
 
-        function startTimerLifecycle() {
-            if (timerInstance) clearInterval(timerInstance);
-            timerInstance = setInterval(() => {
-                if (timerRunning && timeRemaining > 0) {
-                    timeRemaining--;
-                    updateTimerDisplay();
-                    
-                    if (timeRemaining === 0) {
-                        if (!isBreak) {
-                            isBreak = true;
-                            timeRemaining = 5 * 60;
-                            document.getElementById("timer-label").innerText = "修復休止狀態";
-                            document.getElementById("break-modal").style.display = "flex";
-                        } else {
-                            closeBreakModal();
-                        }
-                    }
-                }
-            }, 1000);
-        }
+            reviewHTML += `
+                <div class="review-card" style="border-left: 5px solid ${isRight?'var(--success)':'var(--error)'}">
+                    <p><b>Q${i+1}: ${q.q}</b></p>
+                    <p>您的作答：${userAnswers[i]||'未填'} | 
+                    <span style="color:var(--success); font-weight:bold;">正確答案：${correctContent}</span></p>
+                </div>`;
+        });
 
-        function toggleTimer() { timerRunning = !timerRunning; }
-        function resetTimer() {
-            isBreak = false;
-            timerRunning = true;
-            timeRemaining = 25 * 60;
-            document.getElementById("timer-label").innerText = "當前評量週期";
-            updateTimerDisplay();
-        }
-        function skipTimer() {
-            clearInterval(timerInstance);
-            document.getElementById("time-display").innerText = "計時終止";
-        }
-        function closeBreakModal() {
-            document.getElementById("break-modal").style.display = "none";
-            isBreak = false;
-            timeRemaining = 25 * 60;
-            document.getElementById("timer-label").innerText = "當前評量週期";
-            updateTimerDisplay();
-        }
-    </script>
+        const score = Math.round(correctCount * (100 / currentQuestions.length));
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('review-area').innerHTML = reviewHTML;
+
+        const ps = document.getElementById('pass-status');
+        ps.innerText = score >= 60 ? "及格" : "不及格";
+        ps.style.color = score >= 60 ? "green" : "red";
+
+        // 強制再次運行 MathJax 渲染解析區的公式
+        if (window.MathJax) MathJax.typesetPromise([document.getElementById('review-area')]);
+    }
+</script>
 </body>
 </html>
