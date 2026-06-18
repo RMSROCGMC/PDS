@@ -1,6 +1,6 @@
 // PH_FINAL_CHOICE 國防通識與物理科 課本原題 100% 全收錄版
 window.currentQuiz = {
-    name: "國防通識（全民國防與步槍射擊）課本選擇題全收錄",
+    name: "國防線上題測（1140203）",
     mode: 4,
     password: "990420",
     time: 40,
