@@ -32,7 +32,7 @@
         .main-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; color: white; font-weight: bold; transition: 0.3s; margin-top: 10px; }
         .main-btn:hover { opacity: 0.9; }
         .hidden { display: none !important; }
-        .question-card { text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; background: #252525; }
+        .question-card { text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; background: #252525; scroll-margin-top: 20px; }
         .opt-btn { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border-color); border-radius: 6px; background: #2d2d2d; color: var(--text-main); text-align: left; cursor: pointer; transition: 0.2s; }
         .opt-btn:hover { background: #3d3d3d; }
         .opt-btn.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
@@ -74,9 +74,6 @@
         <div class="input-group">
             <input type="text" id="user-name" class="code-input" placeholder="考生姓名">
             <input type="text" id="quiz-code" class="code-input" placeholder="請輸入代碼 (例: test01)">
-            <div id="password-area" class="hidden">
-                <input type="password" id="quiz-pass" class="code-input" placeholder="輸入題庫密碼">
-            </div>
             <div id="status-msg" style="color:var(--secondary); font-size: 0.85em; margin: 10px 0;">等待讀取伺服器題庫檔案...</div>
         </div>
         <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#444;" disabled>進入測驗</button>
@@ -110,7 +107,7 @@
     </div>
 
     <div id="result-screen" class="hidden">
-        <h2>📊 結算報告</h2>
+        <h2>結算報告</h2>
         <h1 id="final-score" style="font-size: 4em; color:var(--secondary); margin: 10px 0;">0</h1>
         <p id="pass-status" style="font-weight:bold; font-size: 1.3em;"></p>
         
@@ -126,7 +123,7 @@
 <script>
     let quizActive = false, cheats = 0;
     let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
-    let lastExamQuestions = [], lastUserAnswers = []; // 用於追蹤錯題重測
+    let lastExamQuestions = [], lastUserAnswers = []; 
     let isWrongOnlyMode = false;
 
     // --- Cookie 助手函數 ---
@@ -140,6 +137,7 @@
         document.cookie = name + "=" + (encodeURIComponent(value) || "") + expires + "; path=/";
     }
 
+    // 取得指定名稱的 Cookie
     function getCookie(name) {
         let nameEQ = name + "=";
         let ca = document.cookie.split(';');
@@ -172,7 +170,7 @@
     }
 
     function acceptTerms() {
-        setCookie("agree_terms", "true", 365); // 記住一年
+        setCookie("agree_terms", "true", 365); 
         document.getElementById('terms-modal').classList.add('hidden');
     }
 
@@ -187,8 +185,8 @@
         let now = new Date();
         let timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
         
-        history.unshift({ time: timeStr, name: name, quiz: quizName, score: score }); // 最新的排前面
-        if(history.length > 10) history.pop(); // 最多存10筆
+        history.unshift({ time: timeStr, name: name, quiz: quizName, score: score }); 
+        if(history.length > 10) history.pop(); 
         
         setCookie("quiz_history", JSON.stringify(history), 30);
     }
@@ -218,18 +216,17 @@
         } catch(e) { console.error("讀取歷史紀錄失敗", e); }
     }
 
-    // 1. 動態偵測題庫與密碼 (自動適應所有檔案)
+    // 動態偵測題庫與代碼
     document.getElementById('quiz-code').addEventListener('input', (e) => {
         const code = e.target.value.trim();
         if(code) {
             const old = document.getElementById('q-script'); if(old) old.remove();
             const s = document.createElement('script');
-            s.id = 'q-script'; s.src = `${code}.js`; // 對應截圖中的 .js 檔案
+            s.id = 'q-script'; s.src = `${code}.js`; 
             s.onload = () => {
                 if(window.currentQuiz) {
                     document.getElementById('status-msg').innerText = `✅ 已讀取：${window.currentQuiz.name}`;
                     document.getElementById('status-msg').style.color = "var(--success)";
-                    if(window.currentQuiz.password) document.getElementById('password-area').classList.remove('hidden');
                     document.getElementById('start-btn').disabled = false;
                     document.getElementById('start-btn').style.background = "var(--success)";
                 }
@@ -240,9 +237,6 @@
 
     function checkAndStart() {
         if(!document.getElementById('user-name').value.trim()) return alert("請輸入姓名");
-        if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
-            return alert("密碼錯誤");
-        }
         isWrongOnlyMode = false;
         beginQuiz();
     }
@@ -254,10 +248,9 @@
         
         if (!isWrongOnlyMode) {
             document.getElementById('quiz-header').innerText = quiz.name;
-            // 正常模式：隨機化處理
             currentQuestions = JSON.parse(JSON.stringify(quiz.data)).sort(() => Math.random() - 0.5);
         } else {
-            document.getElementById('quiz-header').innerText = `《錯題重測模式》 - ${quiz.name}`;
+            document.getElementById('quiz-header').innerText = `🔥 錯題重測模式 - ${quiz.name}`;
         }
 
         userAnswers = {};
@@ -277,7 +270,9 @@
         const container = document.getElementById('quiz-container');
         container.innerHTML = '';
         currentQuestions.forEach((q, i) => {
-            const card = document.createElement('div'); card.className = 'question-card';
+            const card = document.createElement('div'); 
+            card.className = 'question-card';
+            card.id = `q-card-${i}`; // 給予每張題目卡專屬 ID，方便自動跳轉定位
             card.innerHTML = `<p><strong>Q${i+1}. ${q.q}</strong></p><div id="opts-${i}"></div>`;
             container.appendChild(card);
 
@@ -287,6 +282,17 @@
                     userAnswers[i] = opt.match(/\(([A-D])\)/)[1];
                     Array.from(b.parentElement.children).forEach(x => x.classList.remove('selected'));
                     b.classList.add('selected');
+
+                    // 【自動跳下一題核心邏輯】
+                    // 檢查是否還有下一題，若有則在 200 毫秒後自動滑動過去
+                    if (i < currentQuestions.length - 1) {
+                        setTimeout(() => {
+                            const nextCard = document.getElementById(`q-card-${i + 1}`);
+                            if (nextCard) {
+                                nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 200); // 稍微延遲，讓使用者能看清選取的藍色外觀
+                    }
                 };
                 document.getElementById(`opts-${i}`).appendChild(b);
             });
@@ -303,17 +309,16 @@
         document.getElementById('result-screen').classList.remove('hidden');
 
         let correctCount = 0;
-        let reviewHTML = '<h3>🔍 詳細解析 (正確答案已標註)</h3>';
+        let reviewHTML = '<h3>詳細解析 (正確答案已標註)</h3>';
         let wrongQuestionsCollected = [];
 
         currentQuestions.forEach((q, i) => {
-            // 關鍵：從選項數組中找出開頭為正確代號 (A-D) 的內容
             const correctContent = q.o.find(str => str.trim().startsWith(`(${q.a})`));
             const isRight = userAnswers[i] === q.a;
             if(isRight) {
                 correctCount++;
             } else {
-                wrongQuestionsCollected.push(q); // 收集錯題
+                wrongQuestionsCollected.push(q); 
             }
 
             reviewHTML += `
@@ -332,27 +337,22 @@
         ps.innerText = score >= 60 ? "及格" : "不及格";
         ps.style.color = score >= 60 ? "var(--success)" : "var(--error)";
 
-        // 僅在正常測驗模式（非連續錯題重測）下將成績寫入歷史 Cookie
         if (!isWrongOnlyMode) {
             const uName = document.getElementById('user-name').value.trim();
             saveHistoryScore(uName, window.currentQuiz.name, score);
         }
 
-        // 處理錯題重測按鈕顯示
         const retryBtn = document.getElementById('retry-failed-btn');
         if (wrongQuestionsCollected.length > 0) {
             retryBtn.classList.remove('hidden');
-            // 將錯題儲存至全域暫存，以便下一輪提取
             lastExamQuestions = wrongQuestionsCollected;
         } else {
             retryBtn.classList.add('hidden');
         }
 
-        // 強制再次運行 MathJax 渲染解析區的公式
         if (window.MathJax) MathJax.typesetPromise([document.getElementById('review-area')]);
     }
 
-    // --- 錯題重測啟動程序 ---
     function startWrongQuestionsMode() {
         if (lastExamQuestions.length === 0) return;
         currentQuestions = JSON.parse(JSON.stringify(lastExamQuestions)).sort(() => Math.random() - 0.5);
