@@ -1,6 +1,6 @@
 // ELEC_POWER_001 基本電學：交流電功率 - LaTeX 專業版 (25分鐘)
 window.currentQuiz = {
-    name: "基本電學：交流電功率模擬題測",
+    name: "基本電學模擬題測1140203",
     mode: 4,
     password: "981103",
     time: 25,
