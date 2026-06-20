@@ -1,6 +1,6 @@
 // PHYS_NOTE_001 物理科：近代物理與生活 - 課本原題版 (25分鐘)
 window.currentQuiz = {
-    name: "物理科：期末考必考題測",
+    name: "物理1140203",
     mode: 4,
     password: "981103",
     time: 25,
