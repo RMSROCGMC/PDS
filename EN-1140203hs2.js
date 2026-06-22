@@ -1,4 +1,4 @@
-{
+window.currentQuiz = {
     "name": "英文1140203",
     "mode": 4,
     "time": 40,
