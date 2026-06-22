@@ -1,7 +1,7 @@
 window.currentQuiz = {
     name: "英文1140203",
     mode: 4,
-    password: "981103",
+    password: "970120",
     time: 45,
     data: [
         { "q": "01. There is a serious l_______k of fresh water in the desert. People even have to fight for it.", "o": ["(A) look", "(B) lack", "(C) lock", "(D) luck"], "a": "B" },
