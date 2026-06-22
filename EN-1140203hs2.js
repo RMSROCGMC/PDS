@@ -1,8 +1,9 @@
 window.currentQuiz = {
-    "name": "英文1140203",
-    "mode": 4,
-    "time": 40,
-    "data": [
+    name: "英文1140203",
+    mode: 4,
+    password: "981103",
+    time: 45,
+    data: [
         { "q": "01. There is a serious l_______k of fresh water in the desert. People even have to fight for it.", "o": ["(A) look", "(B) lack", "(C) lock", "(D) luck"], "a": "B" },
         { "q": "02. The school hopes to create a pleasant and safe e_______t for students to learn, improve, and grow in.", "o": ["(A) environment", " (B) envirunment", " (C) envirorment", " (D) enviromant"], "a": "A" },
         { "q": "03. I p_______r hot coffee to iced coffee even on hot days.", "o": ["(A) prefer", "(B) prefor", "(C) prifer", "(D) prefar"], "a": "A" },
