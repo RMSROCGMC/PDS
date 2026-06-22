@@ -1,8 +1,8 @@
 window.currentQuiz = {
     name: "英文1140203",
     mode: 4,
-    password: "970120",
-    time: 45,
+    password: "981103",
+    time: 60,
     data: [
         { "q": "01. There is a serious l_______k of fresh water in the desert. People even have to fight for it.", "o": ["(A) look", "(B) lack", "(C) lock", "(D) luck"], "a": "B" },
         { "q": "02. The school hopes to create a pleasant and safe e_______t for students to learn, improve, and grow in.", "o": ["(A) environment", " (B) envirunment", " (C) envirorment", " (D) enviromant"], "a": "A" },
