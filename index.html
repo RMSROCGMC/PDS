@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>測驗系統</title>
-
+    <title>跨學科數據測驗系統</title>
+    
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], processEscapes: true },
@@ -13,61 +12,22 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-
+    
     <style>
-        :root { 
-            --primary: #1a1a1a; 
-            --secondary: #3498db; 
-            --success: #2ecc71; 
-            --error: #e74c3c; 
-            --bg: #121212; 
-            --card-bg: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-muted: #aaaaaa;
-            --border-color: #333333;
-        }
-        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 15px; user-select: none; }
-        .container { max-width: 800px; margin: 0 auto; background: var(--card-bg); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid var(--border-color); }
-        .code-input { width: 90%; padding: 12px; font-size: 1.1em; text-align: center; border: 2px solid var(--border-color); background: #2a2a2a; color: white; border-radius: 8px; margin-bottom: 10px; }
-        .code-input:focus { border-color: var(--secondary); outline: none; }
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 15px; user-select: none; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .code-input { width: 90%; padding: 12px; font-size: 1.1em; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; }
         .main-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; color: white; font-weight: bold; transition: 0.3s; margin-top: 10px; }
-        .main-btn:hover { opacity: 0.9; }
-        .hidden { display: none !important; }
-        .question-card { text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; background: #252525; scroll-margin-top: 20px; }
-        .opt-btn { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border-color); border-radius: 6px; background: #2d2d2d; color: var(--text-main); text-align: left; cursor: pointer; transition: 0.2s; }
-        .opt-btn:hover { background: #3d3d3d; }
+        .hidden { display: none; }
+        .question-card { text-align: left; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px; background: #fff; }
+        .opt-btn { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; background: #fff; text-align: left; cursor: pointer; }
         .opt-btn.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
-        .review-card { text-align: left; border-left: 5px solid #eee; padding: 15px; margin-bottom: 15px; background: #252525; border: 1px solid var(--border-color); border-left-width: 5px; }
-        #timer-box { font-size: 1.1em; color: var(--error); font-weight: bold; background: #2d1a1a; padding: 5px 10px; border-radius: 5px; border: 1px solid var(--error); }
-        
-        /* 歷史紀錄表格樣式 */
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #252525; color: var(--text-main); font-size: 0.9em; }
-        .history-table th, .history-table td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
-        .history-table th { background: #1a1a1a; color: var(--text-muted); }
-
-        /* 使用者條款彈窗裝飾 */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 12px; max-width: 500px; width: 85%; text-align: left; border: 1px solid var(--border-color); box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
-        .modal-content { max-height: 200px; overflow-y: auto; background: #151515; padding: 15px; border-radius: 6px; font-size: 0.95em; color: var(--text-muted); line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border-color); }
+        .review-card { text-align: left; border-left: 5px solid #eee; padding: 15px; margin-bottom: 15px; background: #fafafa; }
+        #timer-box { font-size: 1.1em; color: var(--error); font-weight: bold; background: #fff0f0; padding: 5px 10px; border-radius: 5px; border: 1px solid var(--error); }
     </style>
 </head>
 <body oncontextmenu="return false">
-
-<div id="terms-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3 style="margin-top:0; color:var(--secondary);">使用者服務條款與免責聲明</h3>
-        <div class="modal-content">
-            <p>歡迎使用本模擬題測系統，在進入測驗前請詳閱以下條款：</p>
-            <p>1. <strong>題目勘誤回報：</strong> 本題庫內容雖經校對，但仍可能存有疏漏。若發現題目、答案或解析有任何錯誤，請務必主動向開發者進行回報，以利系統優化。</p>
-            <p>2. <strong>免責聲明：</strong> 本系統僅供學術複習與模擬自測參考。若因使用本系統作答、練習而導致實際考試成績不理想、未達預期或其他任何形式之損失，開發者概不負任何法律與連帶責任。本測驗屬於自願使用性質，同意後自動套用Cookies。</p>
-        </div>
-        <label style="display:flex; align-items:center; cursor:pointer; font-size:0.95em;">
-            <input type="checkbox" id="agree-check" onchange="toggleAgreeBtn()" style="margin-right:10px; transform: scale(1.2);">
-            我已充分閱讀、理解並同意上述所有條款。
-        </label>
-        <button id="agree-btn" class="main-btn" onclick="acceptTerms()" style="background:#555;" disabled>確認並進入系統</button>
-    </div>
-</div>
 
 <div class="container">
     <div id="login-screen">
@@ -75,159 +35,47 @@
         <div class="input-group">
             <input type="text" id="user-name" class="code-input" placeholder="考生姓名">
             <input type="text" id="quiz-code" class="code-input" placeholder="請輸入代碼 (例: test01)">
+            <div id="password-area" class="hidden">
+                <input type="password" id="quiz-pass" class="code-input" placeholder="輸入題庫密碼">
+            </div>
             <div id="status-msg" style="color:var(--secondary); font-size: 0.85em; margin: 10px 0;">等待讀取伺服器題庫檔案...</div>
         </div>
-        <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#444;" disabled>進入測驗</button>
-
-        <div id="history-section" class="hidden" style="margin-top: 35px; border-top: 1px dashed var(--border-color); padding-top: 20px;">
-            <h3 style="text-align: left; color: var(--text-muted); margin-bottom: 10px;">歷史考評紀錄</h3>
-            <div style="overflow-x:auto;">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>時間</th>
-                            <th>姓名</th>
-                            <th>考卷名稱</th>
-                            <th>分數</th>
-                            <th>結果</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-rows"></tbody>
-                </table>
-            </div>
-        </div>
+        <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#ccc;" disabled>進入測驗</button>
     </div>
 
     <div id="quiz-ui" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <span id="quiz-header" style="font-weight:bold; color: var(--secondary);">載入中...</span>
+            <span id="quiz-header" style="font-weight:bold;">載入中...</span>
             <div id="timer-box">⏳ <span id="time-left">00:00</span></div>
         </div>
         <div id="quiz-container"></div>
-        <button class="main-btn" style="background:var(--secondary);" onclick="confirmSubmit()">提交作答</button>
+        <button class="main-btn" style="background:var(--primary);" onclick="confirmSubmit()">提交作答</button>
     </div>
 
     <div id="result-screen" class="hidden">
-        <h2>結算報告</h2>
-        <h1 id="final-score" style="font-size: 4em; color:var(--secondary); margin: 10px 0;">0</h1>
-        <p id="pass-status" style="font-weight:bold; font-size: 1.3em;"></p>
-        
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button id="retry-failed-btn" class="main-btn hidden" style="background:var(--error); margin-top:0;" onclick="startWrongQuestionsMode()">錯題重測</button>
-            <button class="main-btn" style="background:#555; margin-top:0;" onclick="location.reload()">返回登入</button>
-        </div>
-
-        <div id="review-area" style="margin-top:20px; border-top:2px solid var(--border-color); padding-top:15px;"></div>
+        <h2>📊 結算報告</h2>
+        <h1 id="final-score" style="font-size: 4em; color:var(--secondary);">0</h1>
+        <p id="pass-status" style="font-weight:bold;"></p>
+        <button class="main-btn" style="background:#95a5a6;" onclick="location.reload()">返回登入</button>
+        <div id="review-area" style="margin-top:20px; border-top:2px solid #ddd; padding-top:15px;"></div>
     </div>
 </div>
 
 <script>
     let quizActive = false, cheats = 0;
     let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
-    let lastExamQuestions = [], lastUserAnswers = []; 
-    let isWrongOnlyMode = false;
 
-    // --- Cookie 助手函數 ---
-    function setCookie(name, value, days) {
-        let expires = "";
-        if (days) {
-            let date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (encodeURIComponent(value) || "") + expires + "; path=/";
-    }
-
-    // 取得指定名稱的 Cookie
-    function getCookie(name) {
-        let nameEQ = name + "=";
-        let ca = document.cookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-        }
-        return null;
-    }
-
-    // --- 條款燈箱邏輯 ---
-    window.onload = function() {
-        if (getCookie("agree_terms") !== "true") {
-            document.getElementById('terms-modal').classList.remove('hidden');
-        }
-        showHistoryTable();
-    };
-
-    function toggleAgreeBtn() {
-        const checkbox = document.getElementById('agree-check');
-        const btn = document.getElementById('agree-btn');
-        if (checkbox.checked) {
-            btn.disabled = false;
-            btn.style.background = "var(--success)";
-        } else {
-            btn.disabled = true;
-            btn.style.background = "#555";
-        }
-    }
-
-    function acceptTerms() {
-        setCookie("agree_terms", "true", 365); 
-        document.getElementById('terms-modal').classList.add('hidden');
-    }
-
-    // --- 歷史紀錄邏輯 ---
-    function saveHistoryScore(name, quizName, score) {
-        let history = [];
-        const savedData = getCookie("quiz_history");
-        if (savedData) {
-            try { history = JSON.parse(savedData); } catch(e) { history = []; }
-        }
-        
-        let now = new Date();
-        let timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        
-        history.unshift({ time: timeStr, name: name, quiz: quizName, score: score }); 
-        if(history.length > 10) history.pop(); 
-        
-        setCookie("quiz_history", JSON.stringify(history), 30);
-    }
-
-    function showHistoryTable() {
-        const savedData = getCookie("quiz_history");
-        if (!savedData) return;
-        try {
-            const history = JSON.parse(savedData);
-            if (history.length === 0) return;
-            
-            const tbody = document.getElementById('history-rows');
-            tbody.innerHTML = '';
-            history.forEach(item => {
-                let isPass = item.score >= 60;
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.time}</td>
-                    <td>${item.name}</td>
-                    <td>${item.quiz}</td>
-                    <td style="color:${isPass?'var(--success)':'var(--error)'}; font-weight:bold;">${item.score}</td>
-                    <td style="color:${isPass?'var(--success)':'var(--error)'};">${isPass?'及格':'不及格'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            document.getElementById('history-section').classList.remove('hidden');
-        } catch(e) { console.error("讀取歷史紀錄失敗", e); }
-    }
-
-    // 動態偵測題庫與代碼
+    // 1. 動態偵測題庫與密碼 (自動適應所有檔案)
     document.getElementById('quiz-code').addEventListener('input', (e) => {
         const code = e.target.value.trim();
         if(code) {
             const old = document.getElementById('q-script'); if(old) old.remove();
             const s = document.createElement('script');
-            s.id = 'q-script'; s.src = `${code}.js`; 
+            s.id = 'q-script'; s.src = `${code}.js`; // 對應截圖中的 .js 檔案
             s.onload = () => {
                 if(window.currentQuiz) {
                     document.getElementById('status-msg').innerText = `✅ 已讀取：${window.currentQuiz.name}`;
-                    document.getElementById('status-msg').style.color = "var(--success)";
+                    if(window.currentQuiz.password) document.getElementById('password-area').classList.remove('hidden');
                     document.getElementById('start-btn').disabled = false;
                     document.getElementById('start-btn').style.background = "var(--success)";
                 }
@@ -238,7 +86,9 @@
 
     function checkAndStart() {
         if(!document.getElementById('user-name').value.trim()) return alert("請輸入姓名");
-        isWrongOnlyMode = false;
+        if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
+            return alert("密碼錯誤");
+        }
         beginQuiz();
     }
 
@@ -246,17 +96,12 @@
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('quiz-ui').classList.remove('hidden');
         const quiz = window.currentQuiz;
+        document.getElementById('quiz-header').innerText = quiz.name;
         
-        if (!isWrongOnlyMode) {
-            document.getElementById('quiz-header').innerText = quiz.name;
-            currentQuestions = JSON.parse(JSON.stringify(quiz.data)).sort(() => Math.random() - 0.5);
-        } else {
-            document.getElementById('quiz-header').innerText = `🔥 錯題重測模式 - ${quiz.name}`;
-        }
-
-        userAnswers = {};
+        // 隨機化處理
+        currentQuestions = JSON.parse(JSON.stringify(quiz.data)).sort(() => Math.random() - 0.5);
         totalSeconds = (quiz.time || 20) * 60;
-
+        
         timerInterval = setInterval(() => {
             totalSeconds--;
             const mins = Math.floor(totalSeconds / 60), secs = totalSeconds % 60;
@@ -271,29 +116,16 @@
         const container = document.getElementById('quiz-container');
         container.innerHTML = '';
         currentQuestions.forEach((q, i) => {
-            const card = document.createElement('div'); 
-            card.className = 'question-card';
-            card.id = `q-card-${i}`; // 給予每張題目卡專屬 ID，方便自動跳轉定位
+            const card = document.createElement('div'); card.className = 'question-card';
             card.innerHTML = `<p><strong>Q${i+1}. ${q.q}</strong></p><div id="opts-${i}"></div>`;
             container.appendChild(card);
-
+            
             q.o.forEach(opt => {
                 const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = opt;
                 b.onclick = () => {
                     userAnswers[i] = opt.match(/\(([A-D])\)/)[1];
                     Array.from(b.parentElement.children).forEach(x => x.classList.remove('selected'));
                     b.classList.add('selected');
-
-                    // 【自動跳下一題核心邏輯】
-                    // 檢查是否還有下一題，若有則在 200 毫秒後自動滑動過去
-                    if (i < currentQuestions.length - 1) {
-                        setTimeout(() => {
-                            const nextCard = document.getElementById(`q-card-${i + 1}`);
-                            if (nextCard) {
-                                nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }
-                        }, 200); // 稍微延遲，讓使用者能看清選取的藍色外觀
-                    }
                 };
                 document.getElementById(`opts-${i}`).appendChild(b);
             });
@@ -308,24 +140,20 @@
         clearInterval(timerInterval);
         document.getElementById('quiz-ui').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
-
+        
         let correctCount = 0;
         let reviewHTML = '<h3>詳細解析 (正確答案已標註)</h3>';
-        let wrongQuestionsCollected = [];
-
+        
         currentQuestions.forEach((q, i) => {
+            // 關鍵：從選項數組中找出開頭為正確代號 (A-D) 的內容
             const correctContent = q.o.find(str => str.trim().startsWith(`(${q.a})`));
             const isRight = userAnswers[i] === q.a;
-            if(isRight) {
-                correctCount++;
-            } else {
-                wrongQuestionsCollected.push(q); 
-            }
-
+            if(isRight) correctCount++;
+            
             reviewHTML += `
                 <div class="review-card" style="border-left: 5px solid ${isRight?'var(--success)':'var(--error)'}">
                     <p><b>Q${i+1}: ${q.q}</b></p>
-                    <p>您的作答：<span style="color:${isRight?'var(--success)':'var(--error)'}">${userAnswers[i]||'未填'}</span> | 
+                    <p>您的作答：${userAnswers[i]||'未填'} | 
                     <span style="color:var(--success); font-weight:bold;">正確答案：${correctContent}</span></p>
                 </div>`;
         });
@@ -333,34 +161,13 @@
         const score = Math.round(correctCount * (100 / currentQuestions.length));
         document.getElementById('final-score').innerText = score;
         document.getElementById('review-area').innerHTML = reviewHTML;
-
+        
         const ps = document.getElementById('pass-status');
         ps.innerText = score >= 60 ? "及格" : "不及格";
-        ps.style.color = score >= 60 ? "var(--success)" : "var(--error)";
+        ps.style.color = score >= 60 ? "green" : "red";
 
-        if (!isWrongOnlyMode) {
-            const uName = document.getElementById('user-name').value.trim();
-            saveHistoryScore(uName, window.currentQuiz.name, score);
-        }
-
-        const retryBtn = document.getElementById('retry-failed-btn');
-        if (wrongQuestionsCollected.length > 0) {
-            retryBtn.classList.remove('hidden');
-            lastExamQuestions = wrongQuestionsCollected;
-        } else {
-            retryBtn.classList.add('hidden');
-        }
-
+        // 強制再次運行 MathJax 渲染解析區的公式
         if (window.MathJax) MathJax.typesetPromise([document.getElementById('review-area')]);
-    }
-
-    function startWrongQuestionsMode() {
-        if (lastExamQuestions.length === 0) return;
-        currentQuestions = JSON.parse(JSON.stringify(lastExamQuestions)).sort(() => Math.random() - 0.5);
-        isWrongOnlyMode = true;
-        
-        document.getElementById('result-screen').classList.add('hidden');
-        beginQuiz();
     }
 </script>
 </body>
