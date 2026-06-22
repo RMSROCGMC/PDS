@@ -1,8 +1,9 @@
-{
-    "name": "英文1140203W",
-    "mode": 4,
-    "time": 40,
-    "data": [
+window.currentQuiz = {
+    name: "英文1140203",
+    mode: 4,
+    password: "970120",
+    time: 45,
+    data: [
         { "q": "01. 環境 (n.)", "o": ["(A) environment", "(B) routine", "(C) century", "(D) means"], "a": "A" },
         { "q": "02. 每天的 (adj.)；每天 (adv.)", "o": ["(A) extremely", "(B) daily", "(C) gradually", "(D) profitable"], "a": "B" },
         { "q": "03. 例行公事 (n.)", "o": ["(A) routine", "(B) preference", "(C) transportation", "(D) protection"], "a": "A" },
