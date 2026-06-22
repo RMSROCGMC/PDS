@@ -1,11 +1,11 @@
 window.allQuizzes = [
   { 
-    name: "功能測試測驗", 
-    code: "test01" 
+    name: "英文1140203", 
+    code: "EN-1140203hs2" 
   },
   { 
-    name: "國防科複習題1140203", 
-    code: "ND-1140203" 
+    name: "英文單字", 
+    code: "EN-1140203hs1" 
   }
 
 ];
