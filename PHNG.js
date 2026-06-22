@@ -1,4 +1,3 @@
-// PHYS_NOTE_001 物理科：近代物理與生活 - 課本原題版 (25分鐘)
 window.currentQuiz = {
     name: "物理1140203",
     mode: 4,
