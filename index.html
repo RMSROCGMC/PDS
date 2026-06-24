@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>測驗系統-網頁版(Web ST) -V3-Beta</title>
-    
+
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], processEscapes: true },
@@ -12,7 +12,7 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-    
+
     <style>
         :root { 
             --primary: #1a252f; 
@@ -68,7 +68,7 @@
         .btn-secondary { background: #64748b; }
         .btn-secondary:hover { background: #475569; }
         .hidden { display: none; }
-        
+
         /* 條款區樣式 */
         .terms-box {
             background: #f1f5f9;
@@ -84,7 +84,7 @@
             line-height: 1.6;
         }
         .checkbox-group { text-align: left; margin-bottom: 20px; font-size: 0.95em; color: #334155; }
-        
+
         /* 考題卡片樣式 */
         .question-card { 
             text-align: left; 
@@ -110,7 +110,7 @@
         }
         .opt-btn:hover { background: #f8fafc; border-color: #94a3b8; }
         .opt-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
-        
+
         /* 解析與計時器 */
         .review-card { text-align: left; border-left: 4px solid #eee; padding: 15px; margin-bottom: 15px; background: #f8fafc; }
         #timer-box { 
@@ -122,7 +122,7 @@
             border-radius: 4px; 
             border: 1px solid #fee2e2; 
         }
-        
+
         /* 導航按鈕 */
         .nav-flex { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
         .nav-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; border-radius: 4px; }
@@ -140,7 +140,7 @@
             <div id="password-area" class="hidden">
                 <input type="password" id="quiz-pass" class="code-input" placeholder="請輸入題庫驗證密碼">
             </div>
-            
+
             <h3>使用者服務條款與免責聲明</h3>
             <div class="terms-box">
                 <p><strong>第一條：學術用途與免責聲明</strong><br>
@@ -148,13 +148,13 @@
                 <p><strong>第二條：勘誤回報義務</strong><br>
                 使用者於測驗過程中，如發現任何題目敘述錯誤、選項爭議、公式渲染異常或解析謬誤，有義務立即紀錄該題資訊並聯絡系統開發人員進行回報，以利系統持續維護。使用者不得利用已知錯誤進行惡意刷分或散佈不實言論。</p>
             </div>
-            
+
             <div class="checkbox-group">
                 <label>
                     <input type="checkbox" id="agree-terms"> 我已詳細閱讀並同意上述「學術免責聲明」與「勘誤回報義務」之規範
                 </label>
             </div>
-            
+
             <div id="status-msg" style="color:var(--accent); font-size: 0.85em; margin: 10px 0; text-align: left;">等待讀取伺服器題庫檔案...</div>
         </div>
         <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#cbd5e1; color:#64748b;" disabled>進入測驗</button>
@@ -165,14 +165,14 @@
             <span id="quiz-header" style="font-weight:bold; color:var(--primary); font-size:1.1em;">載入中...</span>
             <div id="timer-box">剩餘時間 <span id="time-left">00:00</span></div>
         </div>
-        
+
         <div id="quiz-container"></div>
-        
+
         <div class="nav-flex">
             <button class="nav-btn" onclick="navigateQuestion(-1)">上一題</button>
             <button class="nav-btn" onclick="navigateQuestion(1)">下一題</button>
         </div>
-        
+
         <button class="main-btn" style="background:var(--primary); margin-top: 25px;" onclick="confirmSubmit()">提交作答</button>
     </div>
 
@@ -180,17 +180,41 @@
         <h2 class="text-center">評量結算報告</h2>
         <h1 id="final-score" class="text-center" style="font-size: 4em; color:var(--accent); margin: 10px 0;">0</h1>
         <p id="pass-status" class="text-center" style="font-weight:bold; font-size: 1.2em; margin-bottom: 20px;"></p>
-        
+
         <div style="display:flex; gap:10px;">
             <button id="retry-failed-btn" class="main-btn hidden" style="background:var(--accent);" onclick="startWrongQuestionsQuiz()">僅重測錯題</button>
             <button class="main-btn btn-secondary" onclick="location.reload()">返回登入畫面</button>
         </div>
-        
+
         <div id="review-area" style="margin-top:30px; border-top:2px solid #e2e8f0; padding-top:20px;"></div>
     </div>
 </div>
 
 <script>
+    // === iOS 裝置硬性攔截邏輯 ===
+    window.addEventListener('DOMContentLoaded', () => {
+        // 同時檢測 iPhone/iPad/iPod 以及 iPadOS 13+ 模擬成 MacIntel 且具備多點觸控的環境
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isIOS) {
+            alert("[SYSTEM ERROR] 遭到ios安全管理系統攔截！");
+            const container = document.querySelector('.container');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 10px; color: var(--error);">
+                        <h2 style="font-size: 1.8em; margin-bottom: 15px;">⚠️系統存取受限⚠️</h2>
+                        <p style="font-size: 1.05em; line-height: 1.8; color: #475569; text-align: left; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            偵測到您目前正在使用 <strong>iOS / iPadOS</strong> 行動網頁端裝置。<br><br>
+                            因應系統架構及 MathJax 渲染環境的穩定性規範，本評量系統目前不對 iOS 裝置提供支援。<br>
+                            請改用 <strong>Windows/Linux電腦桌機版瀏覽器</strong> 或 <strong>Android 裝置</strong> 重新登入進行測驗。
+                        </p>
+                    </div>
+                `;
+            }
+        }
+    });
+
     let quizActive = false;
     let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
     let currentActiveIndex = 0; // 當前聚焦題目的索引
@@ -217,7 +241,7 @@
 
     // 監聽勾選條款以解鎖按鈕
     document.getElementById('agree-terms').addEventListener('change', checkUnlockStatus);
-    
+
     function checkUnlockStatus() {
         const agreed = document.getElementById('agree-terms').checked;
         const loaded = !!window.currentQuiz;
@@ -237,7 +261,7 @@
         if(!document.getElementById('user-name').value.trim()) return alert("請填寫考生姓名");
         if(!document.getElementById('agree-terms').checked) return alert("請先同意使用者條款");
         if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
-            return alert("運作程式遭到ios安全系統攔截！ ErrorCDE：0217");
+            return alert("密碼有誤！");
         }
         isWrongQuestionsMode = false;
         beginQuiz(JSON.parse(JSON.stringify(window.currentQuiz.data)).sort(() => Math.random() - 0.5));
@@ -247,14 +271,14 @@
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.add('hidden');
         document.getElementById('quiz-ui').classList.remove('hidden');
-        
+
         const quiz = window.currentQuiz;
         document.getElementById('quiz-header').innerText = isWrongQuestionsMode ? `${quiz.name} (錯題重測)` : quiz.name;
-        
+
         currentQuestions = questionsDataset;
         userAnswers = {};
         currentActiveIndex = 0;
-        
+
         // 設定時間
         totalSeconds = (quiz.time || 20) * 60;
         clearInterval(timerInterval);
@@ -264,7 +288,7 @@
             document.getElementById('time-left').innerText = `${mins}:${secs.toString().padStart(2,'0')}`;
             if (totalSeconds <= 0) evalQuiz();
         }, 1000);
-        
+
         quizActive = true;
         renderQuiz();
     }
@@ -272,7 +296,7 @@
     function renderQuiz() {
         const container = document.getElementById('quiz-container');
         container.innerHTML = '';
-        
+
         // 渲染所有題目，但僅將當前題（currentActiveIndex）顯示
         currentQuestions.forEach((q, i) => {
             const card = document.createElement('div'); 
@@ -280,21 +304,21 @@
             card.id = `q-card-${i}`;
             card.innerHTML = `<div class="question-title">第 ${i+1} 題 / 共 ${currentQuestions.length} 題<br>${q.q}</div><div id="opts-${i}"></div>`;
             container.appendChild(card);
-            
+
             q.o.forEach(opt => {
                 const b = document.createElement('button'); 
                 b.className = 'opt-btn'; 
                 b.innerText = opt;
-                
+
                 // 檢查是否已作答，用於保留狀態
                 const optLetter = opt.match(/\(([A-D])\)/)[1];
                 if(userAnswers[i] === optLetter) b.classList.add('selected');
-                
+
                 b.onclick = () => {
                     userAnswers[i] = optLetter;
                     Array.from(b.parentElement.children).forEach(x => x.classList.remove('selected'));
                     b.classList.add('selected');
-                    
+
                     // 自動觸發：延時 300 毫秒後自動跳至下一題
                     setTimeout(() => {
                         if (currentActiveIndex < currentQuestions.length - 1) {
@@ -334,11 +358,11 @@
         clearInterval(timerInterval);
         document.getElementById('quiz-ui').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
-        
+
         let correctCount = 0;
         let reviewHTML = '<h3>詳細解析評估 (正確答案已標註)</h3>';
         originalWrongQuestions = []; // 清空上一次的錯題暫存
-        
+
         currentQuestions.forEach((q, i) => {
             const correctContent = q.o.find(str => str.trim().startsWith(`(${q.a})`));
             const isRight = userAnswers[i] === q.a;
@@ -348,7 +372,7 @@
                 // 將答錯的原始題目物件推入錯題庫中
                 originalWrongQuestions.push(q);
             }
-            
+
             reviewHTML += `
                 <div class="review-card" style="border-left: 4px solid ${isRight ? 'var(--success)' : 'var(--error)'}">
                     <p><b>題目 ${i+1}: ${q.q}</b></p>
@@ -360,7 +384,7 @@
         const score = Math.round(correctCount * (100 / currentQuestions.length));
         document.getElementById('final-score').innerText = score;
         document.getElementById('review-area').innerHTML = reviewHTML;
-        
+
         const ps = document.getElementById('pass-status');
         ps.innerText = score >= 60 ? "評等：及格" : "評等：不及格";
         ps.style.color = score >= 60 ? "var(--success)" : "var(--error)";
