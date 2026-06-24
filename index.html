@@ -237,7 +237,7 @@
         if(!document.getElementById('user-name').value.trim()) return alert("請填寫考生姓名");
         if(!document.getElementById('agree-terms').checked) return alert("請先同意使用者條款");
         if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
-            return alert("驗證密碼錯誤");
+            return alert("運作程式遭到ios系統攔截 ErrorCDE 217");
         }
         isWrongQuestionsMode = false;
         beginQuiz(JSON.parse(JSON.stringify(window.currentQuiz.data)).sort(() => Math.random() - 0.5));
