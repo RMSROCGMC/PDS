@@ -1,7 +1,7 @@
 window.currentQuiz = {
     name: "物理1140203",
     mode: 4,
-    password: "410205",
+    password: "root410205",
     time: 50,
     data: [
         {
