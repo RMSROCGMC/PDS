@@ -144,7 +144,7 @@
             <h3>使用者服務條款與免責聲明</h3>
             <div class="terms-box">
                 <p><strong>第一條：學術用途與免責聲明</strong><br>
-                本系統所提供之測驗內容、學術題目及解析僅供學術交流與個人自我評量用途。系統開發方與學術內容提供者已盡力確保內容之正確性，惟不保證所有資訊皆毫無疏漏。若因題目錯誤、系統延遲、評分偏差或其他不可抗力因素導致使用者之正式考試成績、權益或決策產生偏差，本系統及開發方概不負任何法律責任與賠償義務。</p>
+                本系統所提供之測驗內容、學術題目及解析僅供學術交流與個人自我評量用途。系統開發方與學術內容提供者已盡力確保內容之正確性，惟不保證所有資訊皆毫無疏漏。若因題目錯誤、系統延遲、評分偏差或其他不可抗力因素導致使用者之正式考試成績、權益 or 決策產生偏差，本系統及開發方概不負任何法律責任與賠償義務。</p>
                 <p><strong>第二條：勘誤回報義務</strong><br>
                 使用者於測驗過程中，如發現任何題目敘述錯誤、選項爭議、公式渲染異常或解析謬誤，有義務立即紀錄該題資訊並聯絡系統開發人員進行回報，以利系統持續維護。使用者不得利用已知錯誤進行惡意刷分或散佈不實言論。</p>
             </div>
@@ -191,30 +191,6 @@
 </div>
 
 <script>
-    // === iOS 裝置硬性攔截邏輯 ===
-    window.addEventListener('DOMContentLoaded', () => {
-        // 同時檢測 iPhone/iPad/iPod 以及 iPadOS 13+ 模擬成 MacIntel 且具備多點觸控的環境
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-        if (isIOS) {
-            alert("[SYSTEM ERROR] 遭到ios安全管理系統攔截！");
-            const container = document.querySelector('.container');
-            if (container) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px 10px; color: var(--error);">
-                        <h2 style="font-size: 1.8em; margin-bottom: 15px;">⚠️系統存取受限⚠️</h2>
-                        <p style="font-size: 1.05em; line-height: 1.8; color: #475569; text-align: left; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                            偵測到您目前正在使用 <strong>iOS / iPadOS</strong> 行動網頁端裝置。<br><br>
-                 系統提示：遭到ios安全系統攔截系統存取權限受限！ <br>
-                            請改用 <strong>Windows/Linux電腦桌機版瀏覽器</strong> 或 <strong>Android 裝置</strong> 重新登入進行測驗。
-                        </p>
-                    </div>
-                `;
-            }
-        }
-    });
-
     let quizActive = false;
     let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
     let currentActiveIndex = 0; // 當前聚焦題目的索引
@@ -258,6 +234,28 @@
     }
 
     function checkAndStart() {
+        // === iOS 裝置點擊按鈕時硬性攔截邏輯 ===
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isIOS) {
+            alert("[SYSTEM ERROR] 遭到ios安全管理系統攔截！");
+            const container = document.querySelector('.container');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 10px; color: var(--error);">
+                        <h2 style="font-size: 1.8em; margin-bottom: 15px;">⚠️系統存取受限⚠️</h2>
+                        <p style="font-size: 1.05em; line-height: 1.8; color: #475569; text-align: left; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            偵測到您目前正在使用 <strong>iOS / iPadOS</strong> 行動網頁端裝置。<br><br>
+                            系統提示：遭到ios安全系統攔截系統存取權限受限！ <br>
+                            請改用 <strong>Windows/Linux電腦桌機版瀏覽器</strong> 或 <strong>Android 裝置</strong> 重新登入進行測驗。
+                        </p>
+                    </div>
+                `;
+            }
+            return; // 終止後續進入測驗的程式執行
+        }
+
         if(!document.getElementById('user-name').value.trim()) return alert("請填寫考生姓名");
         if(!document.getElementById('agree-terms').checked) return alert("請先同意使用者條款");
         if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
