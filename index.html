@@ -196,6 +196,9 @@
     let currentActiveIndex = 0; // 當前聚焦題目的索引
     let isWrongQuestionsMode = false; // 是否處於錯題重測模式
     let originalWrongQuestions = []; // 儲存篩選出的錯題
+    
+    // 防作弊 / 離開畫面監控變數
+    let warningCount = 0;
 
     // 監聽題庫代碼輸入
     document.getElementById('quiz-code').addEventListener('input', (e) => {
@@ -233,34 +236,37 @@
         }
     }
 
-    function checkAndStart() {
-        // === iOS 裝置點擊按鈕時硬性攔截邏輯 ===
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-        if (isIOS) {
-            alert("[SYSTEM ERROR] 遭到ios安全管理系統攔截！");
-            const container = document.querySelector('.container');
-            if (container) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px 10px; color: var(--error);">
-                        <h2 style="font-size: 1.8em; margin-bottom: 15px;">⚠️系統存取受限⚠️</h2>
-                        <p style="font-size: 1.05em; line-height: 1.8; color: #475569; text-align: left; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                            偵測到您目前正在使用 <strong>iOS / iPadOS</strong> 行動網頁端裝置。<br><br>
-                            系統提示：遭到ios安全系統攔截系統存取權限受限！ <br>
-                            請改用 <strong>Windows/Linux電腦桌機版瀏覽器</strong> 或 <strong>Android 裝置</strong> 重新登入進行測驗。
-                        </p>
-                    </div>
-                `;
-            }
-            return; // 終止後續進入測驗的程式執行
+    // 請求開啟全螢幕模式
+    function requestFullScreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+            elem.webkitRequestFullscreen().catch(() => {});
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen().catch(() => {});
         }
+    }
 
+    // 離開全螢幕退出處理
+    function exitFullScreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen().catch(() => {});
+        }
+    }
+
+    function checkAndStart() {
         if(!document.getElementById('user-name').value.trim()) return alert("請填寫考生姓名");
         if(!document.getElementById('agree-terms').checked) return alert("請先同意使用者條款");
         if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
             return alert("密碼有誤！");
         }
+        
+        // 點擊進入測驗時請求全螢幕
+        requestFullScreen();
+
         isWrongQuestionsMode = false;
         beginQuiz(JSON.parse(JSON.stringify(window.currentQuiz.data)).sort(() => Math.random() - 0.5));
     }
@@ -276,6 +282,7 @@
         currentQuestions = questionsDataset;
         userAnswers = {};
         currentActiveIndex = 0;
+        warningCount = 0; // 重置警告次數
 
         // 設定時間
         totalSeconds = (quiz.time || 20) * 60;
@@ -290,6 +297,46 @@
         quizActive = true;
         renderQuiz();
     }
+
+    // 監聽分頁切換 / 離開畫面 / 退出全螢幕防作弊機制
+    function handleViolation() {
+        if (!quizActive) return;
+
+        warningCount++;
+        if (warningCount === 1) {
+            alert("⚠️ 警告【第 1 次】：測驗期間禁止切換視窗或離開畫面！再犯一次將會被強制交卷！");
+            requestFullScreen(); // 嘗試重新拉回全螢幕
+        } else if (warningCount >= 2) {
+            alert("🚨 系統通知【第 2 次違規】：您已再次離開測驗畫面，系統已自動為您強制提交考卷！");
+            evalQuiz();
+        }
+    }
+
+    // 1. 分頁隱藏/切換應用程式偵測
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden && quizActive) {
+            handleViolation();
+        }
+    });
+
+    // 2. 視窗失去焦點偵測
+    window.addEventListener("blur", () => {
+        if (quizActive) {
+            handleViolation();
+        }
+    });
+
+    // 3. 手動退出全螢幕偵測
+    document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement && quizActive) {
+            handleViolation();
+        }
+    });
+    document.addEventListener("webkitfullscreenchange", () => {
+        if (!document.webkitFullscreenElement && quizActive) {
+            handleViolation();
+        }
+    });
 
     function renderQuiz() {
         const container = document.getElementById('quiz-container');
@@ -354,6 +401,10 @@
     function evalQuiz() {
         quizActive = false;
         clearInterval(timerInterval);
+        
+        // 結束測驗後退出全螢幕
+        exitFullScreen();
+
         document.getElementById('quiz-ui').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
 
@@ -401,6 +452,8 @@
     // 啟動錯題重測機制
     function startWrongQuestionsQuiz() {
         if(originalWrongQuestions.length === 0) return;
+        
+        requestFullScreen(); // 錯題重測時也觸發全螢幕
         isWrongQuestionsMode = true;
         // 複製錯題集並隨機洗牌
         const wrongDataset = JSON.parse(JSON.stringify(originalWrongQuestions)).sort(() => Math.random() - 0.5);
