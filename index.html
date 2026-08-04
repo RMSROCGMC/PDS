@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>測驗系統-網頁版(Web ST) -V11-Beta</title>
+    <title>測驗系統-網頁版(Web ST) -V3-Beta</title>
 
     <!-- MathJax 公式渲染套件 -->
     <script>
@@ -163,7 +163,7 @@
             overflow: hidden;
         }
 
-        /* 📊 表格 (Table) 專用樣式 */
+        /* 表格 (Table) 專用樣式 */
         .report-table {
             width: 100%;
             border-collapse: collapse;
@@ -224,7 +224,7 @@
             letter-spacing: 2px;
         }
 
-        /* 🈴 印章 CSS 樣式區域 */
+        /* 印章 CSS 樣式區域 */
         .stamp-container-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -297,7 +297,7 @@
         }
         .stamp-checkbox-list label:last-child { margin-bottom: 0; }
 
-        /* 📱 手機端 RWD 適應優化 */
+        /* 手機端 RWD 適應優化 */
         @media (max-width: 600px) {
             body { padding: 10px; }
             .container { padding: 18px 15px; }
@@ -465,8 +465,8 @@
         <div id="pdf-step-1">
             <h3 style="color:#ffffff; margin-bottom:15px;">請選擇 PDF 匯出格式</h3>
             <p style="font-size:0.9em; color:#cbd5e1; margin-bottom:20px;">您希望下載的 PDF 是否包含錯題細節與答案解析？</p>
-            <button class="main-btn btn-accent" onclick="selectPdfFormat(false)">僅評量結果 (簡要版)</button>
-            <button class="main-btn btn-success" id="btn-pdf-with-wrong" onclick="selectPdfFormat(true)">評量結果 + 錯題解析</button>
+            <button class="main-btn btn-accent" onclick="selectPdfFormat(false)">📄 僅評量結果 (簡要版)</button>
+            <button class="main-btn btn-success" id="btn-pdf-with-wrong" onclick="selectPdfFormat(true)">📚 評量結果 + 錯題解析</button>
             <button class="main-btn btn-secondary" style="margin-top:10px;" onclick="closePdfModal()">取消</button>
         </div>
 
@@ -483,9 +483,9 @@
         <!-- 階段三：輸入附加元件代碼與選擇印章 -->
         <div id="pdf-step-3" class="hidden">
             <h3 style="color:#ffffff; margin-bottom:12px;">輸入附加元件與選擇印章</h3>
-            <p style="font-size:0.85em; color:#94a3b8; margin-bottom:12px;">請輸入代碼並勾選需附加之電子印章（可複選）：</p>
+            <p style="font-size:0.85em; color:#94a3b8; margin-bottom:12px;">請輸入代碼或勾選需附加之電子印章（可複選）：</p>
             
-            <input type="text" id="addon-code-input" class="code-input" placeholder="請輸入附加元件代碼" style="text-align:center; font-weight:bold;">
+            <input type="text" id="addon-code-input" class="code-input" placeholder="請輸入附加元件代碼 (選填)" style="text-align:center; font-weight:bold;">
             
             <!-- 印章勾選清單 -->
             <div class="stamp-checkbox-list">
@@ -618,14 +618,15 @@
 
     function confirmAddonAndDownload() {
         const code = document.getElementById('addon-code-input').value.trim();
-        if (!code) {
-            return alert("請輸入有效的附加元件代碼！");
-        }
-
         const selectedStamps = [];
         document.querySelectorAll('.stamp-option:checked').forEach(chk => {
             selectedStamps.push(chk.value);
         });
+
+        // 只要有勾選印章，或是有填代碼，就能繼續
+        if (!code && selectedStamps.length === 0) {
+            return alert("請輸入附加元件代碼或至少勾選一項印章！");
+        }
 
         processPDFDownload(selectedPdfIncludeWrong, code, selectedStamps);
     }
@@ -652,7 +653,7 @@
         const subject = window.currentQuiz ? window.currentQuiz.name : '測驗報告';
         const answeredCount = Object.keys(userAnswers).length;
 
-        // 1. 處理附加憑證代碼列
+        // 1. 處理附加憑證代碼列 (若有填寫才顯示)
         if (addonCode) {
             addonVal.innerText = addonCode;
             addonRow.classList.remove('hidden');
