@@ -167,7 +167,7 @@
         .res-yellow { color: #eab308; font-weight: bold; }
         .res-black-pass { color: #ffffff; font-weight: bold; }
 
-        /* 📱 手機端 RWD 適應優化 */
+        /* 📱 手機端 RWD 適應優化 (消除過於修長比例) */
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -249,7 +249,7 @@
             <div>答錯題數：<span id="res-orange" class="res-orange">0</span></div>
             <div>未作答題數：<span id="res-unanswered">0</span></div>
             <br>
-            <div>經成績比對本次測驗結果以 <span id="res-pass-label">--</span> 論</div>
+            <div>經成績比對本次測驗結果以 <span id="res-pass-label">--</span></div>
             <br>
             <div>測試者姓名：<span id="res-username">--</span></div>
             <div>測試開始時間：台北標準時間(GTM+8)<span id="res-start-time">--</span>&lt;24時制&gt;</div>
@@ -283,7 +283,7 @@
     let isWrongQuestionsMode = false;
     let originalWrongQuestions = [];
 
-    // 防作弊 / 離開畫面紀錄次數 (不跳警告、不強制交卷)
+    // 防作弊 / 離開畫面紀錄次數
     let warningCount = 0;
 
     // 統計時間與使用者 IP 紀錄
@@ -403,7 +403,7 @@
         currentQuestions = questionsDataset;
         userAnswers = {};
         currentActiveIndex = 0;
-        warningCount = 0; // 重置離開次數
+        warningCount = 0;
         startTimeObj = new Date();
 
         totalSeconds = (quiz.time || 20) * 60;
@@ -419,7 +419,7 @@
         renderQuiz();
     }
 
-    // 靜默紀錄離開畫面次數（不強制交卷、不跳警告）
+    // 靜默紀錄離開畫面次數
     function handleViolation() {
         if (!quizActive) return;
         warningCount++;
@@ -524,7 +524,7 @@
         });
 
         const totalQ = currentQuestions.length;
-        const answeredCount = Object.keys(userAnswers).length; // 已填答題數
+        const answeredCount = Object.keys(userAnswers).length;
         const unansweredCount = totalQ - answeredCount;
         const wrongCount = totalQ - correctCount - unansweredCount;
         const score = Math.round(correctCount * (100 / totalQ));
@@ -551,12 +551,16 @@
         unAnsElem.innerText = unansweredCount;
         unAnsElem.className = unansweredCount === 0 ? "res-green" : "res-red";
 
+        // 🎯 成績比對結果邏輯（作弊時顯示：因作弊不記錄成績）
         const passLabel = document.getElementById('res-pass-label');
-        if (score >= 60) {
-            passLabel.innerText = "及格";
+        if (warningCount > 0) {
+            passLabel.innerText = "因作弊不記錄成績";
+            passLabel.className = "res-red";
+        } else if (score >= 60) {
+            passLabel.innerText = "及格 論";
             passLabel.className = "res-black-pass";
         } else {
-            passLabel.innerText = "不及格";
+            passLabel.innerText = "不及格 論";
             passLabel.className = "res-red";
         }
 
@@ -564,7 +568,7 @@
         document.getElementById('res-start-time').innerText = formatTime(startTimeObj);
         document.getElementById('res-end-time').innerText = formatTime(endTimeObj);
 
-        // 1. 作弊檢測判斷：離開畫面 X 次（紅字）或 否（黃字）
+        // 作弊檢測判定
         const cheatElem = document.getElementById('res-cheated');
         if (warningCount > 0) {
             cheatElem.innerText = `檢測到離開畫面${warningCount}次`;
@@ -574,7 +578,7 @@
             cheatElem.className = "res-yellow";
         }
 
-        // 2. 檢測惡意交白卷：若未作答任何一題（answeredCount === 0）則顯示警告訊息
+        // 惡意交白卷警告
         const emptyMsgElem = document.getElementById('empty-paper-msg');
         if (answeredCount === 0) {
             emptyMsgElem.classList.remove('hidden');
