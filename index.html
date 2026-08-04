@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>測驗系統-網頁版(Web ST) -V3-Beta</title>
 
+    <!-- MathJax 公式渲染套件 -->
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], processEscapes: true },
@@ -12,6 +13,9 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+    <!-- html2pdf.js 套件 (用於產生與下載 PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root { 
@@ -31,6 +35,7 @@
             margin: 0; 
             padding: 20px; 
             user-select: none; 
+            box-sizing: border-box;
         }
         .container { 
             max-width: 850px; 
@@ -40,6 +45,7 @@
             padding: 35px; 
             border-radius: 8px; 
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); 
+            box-sizing: border-box;
         }
         h2, h3 { color: var(--primary); margin-top: 0; font-weight: 700; }
         .text-center { text-align: center; }
@@ -67,7 +73,20 @@
         }
         .btn-secondary { background: #64748b; }
         .btn-secondary:hover { background: #475569; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #219653; }
         .hidden { display: none; }
+
+        /* 按鈕組響應式佈局 */
+        .action-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-btn-group .main-btn {
+            flex: 1;
+            margin-top: 0;
+        }
 
         /* 條款區樣式 */
         .terms-box {
@@ -128,23 +147,47 @@
         .nav-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; border-radius: 4px; }
         .nav-btn:hover { background: #f1f5f9; }
 
-        /* 指定的黑底評量報告樣式 */
+        /* 黑底評量報告樣式 (Mobile 優化) */
         .result-container-dark {
             background-color: #000000;
             color: #ffffff;
             padding: 30px;
             border-radius: 8px;
-            font-family: monospace, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, monospace, sans-serif;
             text-align: left;
             line-height: 1.8;
             font-size: 1.05em;
+            word-break: break-word;
+            box-sizing: border-box;
         }
         .res-blue { color: #3b82f6; font-weight: bold; }
         .res-orange { color: #f97316; font-weight: bold; }
         .res-green { color: #22c55e; font-weight: bold; }
         .res-red { color: #ef4444; font-weight: bold; }
         .res-yellow { color: #eab308; font-weight: bold; }
-        .res-black-pass { color: #ffffff; font-weight: bold; } /* 黑底中以亮白顯示及格 */
+        .res-black-pass { color: #ffffff; font-weight: bold; }
+
+        /* 📱 手機端 RWD 適應優化 */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 18px 15px;
+            }
+            .result-container-dark {
+                padding: 18px 15px;
+                font-size: 0.92em;
+                line-height: 1.65;
+            }
+            .action-btn-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .action-btn-group .main-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -198,12 +241,12 @@
 
     <div id="result-screen" class="hidden">
         <!-- 黑底評量報告區域 -->
-        <div class="result-container-dark">
+        <div class="result-container-dark" id="report-card">
             <div>科目名稱：<span id="res-subject">--</span></div>
             <div>第 <span id="res-test-count" class="res-blue">1</span> 次測驗</div>
             <div>成績：<span id="res-score">0</span></div>
             <div>答對題數：<span id="res-correct" class="res-blue">0</span></div>
-            <div>答錯題數：<span id="res-wrong" class="res-orange">0</span></div>
+            <div>答錯題數：<span id="res-orange" class="res-orange">0</span></div>
             <div>未作答題數：<span id="res-unanswered">0</span></div>
             <br>
             <div>經成績比對本次測驗結果以 <span id="res-pass-label">--</span> 論</div>
@@ -212,6 +255,7 @@
             <div>測試開始時間：台北標準時間(GTM+8)<span id="res-start-time">--</span>&lt;24時制&gt;</div>
             <div>交卷時間：台北標準時間(GTM+8)<span id="res-end-time">--</span>&lt;24時制&gt;</div>
             <div>是否檢測到作弊行為：<span id="res-cheated">否</span></div>
+            <div id="empty-paper-msg" class="hidden" style="color:#ef4444; font-weight:bold;">檢測到惡意繳交空白試卷</div>
             <div>作答使用時間：<span id="res-duration">--</span></div>
             <div>作答者IP：<span id="res-ip" class="res-blue">載入中...</span></div>
             <div>作答者答題平台：<span id="res-platform">--</span></div>
@@ -221,7 +265,9 @@
             <div style="text-align: right; font-size: 0.85em; margin-top: 5px;">&copy;2026 著作權所有仿冒必究</div>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top: 20px;">
+        <!-- 底部功能按鈕群 -->
+        <div class="action-btn-group">
+            <button class="main-btn btn-success" onclick="downloadPDF()">下載結果 PDF</button>
             <button id="retry-failed-btn" class="main-btn hidden" style="background:var(--accent);" onclick="startWrongQuestionsQuiz()">僅重測錯題</button>
             <button class="main-btn btn-secondary" onclick="location.reload()">返回登入畫面</button>
         </div>
@@ -237,7 +283,7 @@
     let isWrongQuestionsMode = false;
     let originalWrongQuestions = [];
 
-    // 防作弊 / 離開畫面監控變數
+    // 防作弊 / 離開畫面紀錄次數 (不跳警告、不強制交卷)
     let warningCount = 0;
 
     // 統計時間與使用者 IP 紀錄
@@ -250,14 +296,33 @@
         .then(data => { userIP = data.ip; })
         .catch(() => { userIP = "127.0.0.1"; });
 
-    // 取得作業系統平台
+    // 準確辨識設備：手機、平板、電腦
     function getPlatform() {
         const ua = navigator.userAgent;
-        if (ua.includes("Win")) return "Windows";
-        if (ua.includes("Mac")) return "macOS";
-        if (ua.includes("Android")) return "Android";
-        if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
-        return "Unknown";
+        const isMobile = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        const isTablet = /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle)/i.test(ua) || 
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isTablet) return "平板";
+        if (isMobile) return "手機";
+        return "電腦";
+    }
+
+    // PDF 檔案下載功能
+    function downloadPDF() {
+        const element = document.getElementById('report-card');
+        const username = document.getElementById('user-name').value.trim() || '考生';
+        const subject = window.currentQuiz ? window.currentQuiz.name : '測驗報告';
+        
+        const opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     `${username}_${subject}_測驗結果.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, backgroundColor: '#000000', logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
     }
 
     // 監聽題庫代碼輸入
@@ -338,7 +403,7 @@
         currentQuestions = questionsDataset;
         userAnswers = {};
         currentActiveIndex = 0;
-        warningCount = 0;
+        warningCount = 0; // 重置離開次數
         startTimeObj = new Date();
 
         totalSeconds = (quiz.time || 20) * 60;
@@ -354,17 +419,10 @@
         renderQuiz();
     }
 
+    // 靜默紀錄離開畫面次數（不強制交卷、不跳警告）
     function handleViolation() {
         if (!quizActive) return;
-
         warningCount++;
-        if (warningCount === 1) {
-            alert("⚠️ 警告【第 1 次】：測驗期間禁止切換視窗或離開畫面！再犯一次將會被強制交卷！");
-            requestFullScreen();
-        } else if (warningCount >= 2) {
-            alert("🚨 系統通知【第 2 次違規】：您已再次離開測驗畫面，系統已自動為您強制提交考卷！");
-            evalQuiz();
-        }
     }
 
     document.addEventListener("visibilitychange", () => {
@@ -466,7 +524,7 @@
         });
 
         const totalQ = currentQuestions.length;
-        const answeredCount = Object.keys(userAnswers).length;
+        const answeredCount = Object.keys(userAnswers).length; // 已填答題數
         const unansweredCount = totalQ - answeredCount;
         const wrongCount = totalQ - correctCount - unansweredCount;
         const score = Math.round(correctCount * (100 / totalQ));
@@ -487,7 +545,7 @@
         document.getElementById('res-test-count').innerText = localCount;
         document.getElementById('res-score').innerText = score;
         document.getElementById('res-correct').innerText = correctCount;
-        document.getElementById('res-wrong').innerText = wrongCount;
+        document.getElementById('res-orange').innerText = wrongCount;
 
         const unAnsElem = document.getElementById('res-unanswered');
         unAnsElem.innerText = unansweredCount;
@@ -506,13 +564,22 @@
         document.getElementById('res-start-time').innerText = formatTime(startTimeObj);
         document.getElementById('res-end-time').innerText = formatTime(endTimeObj);
 
+        // 1. 作弊檢測判斷：離開畫面 X 次（紅字）或 否（黃字）
         const cheatElem = document.getElementById('res-cheated');
         if (warningCount > 0) {
-            cheatElem.innerText = "是";
+            cheatElem.innerText = `檢測到離開畫面${warningCount}次`;
             cheatElem.className = "res-red";
         } else {
             cheatElem.innerText = "否";
             cheatElem.className = "res-yellow";
+        }
+
+        // 2. 檢測惡意交白卷：若未作答任何一題（answeredCount === 0）則顯示警告訊息
+        const emptyMsgElem = document.getElementById('empty-paper-msg');
+        if (answeredCount === 0) {
+            emptyMsgElem.classList.remove('hidden');
+        } else {
+            emptyMsgElem.classList.add('hidden');
         }
 
         document.getElementById('res-duration').innerText = `${hours}時${mins}分${secs}秒`;
