@@ -147,19 +147,48 @@
         .nav-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; border-radius: 4px; }
         .nav-btn:hover { background: #f1f5f9; }
 
-        /* 黑底評量報告樣式 (Mobile 優化) */
+        /* 黑底評量報告區域 */
         .result-container-dark {
             background-color: #000000;
             color: #ffffff;
             padding: 30px;
             border-radius: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, monospace, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             text-align: left;
             line-height: 1.8;
-            font-size: 1.05em;
-            word-break: break-word;
             box-sizing: border-box;
         }
+
+        /* 📊 表格 (Table) 專用樣式 */
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #090d16;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+        }
+        .report-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #1e293b;
+            font-size: 0.95em;
+        }
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+        .tb-label {
+            width: 35%;
+            color: #94a3b8;
+            font-weight: 600;
+            background: #111827;
+        }
+        .tb-val {
+            width: 65%;
+            color: #f8fafc;
+        }
+
+        /* 文字色彩等級 */
         .res-blue { color: #3b82f6; font-weight: bold; }
         .res-orange { color: #f97316; font-weight: bold; }
         .res-green { color: #22c55e; font-weight: bold; }
@@ -167,32 +196,23 @@
         .res-yellow { color: #eab308; font-weight: bold; }
         .res-black-pass { color: #ffffff; font-weight: bold; }
 
-        /* 📱 手機端 RWD 適應優化 (消除過於修長比例) */
+        /* 📱 手機端 RWD 適應優化 */
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                padding: 18px 15px;
-            }
-            .result-container-dark {
-                padding: 18px 15px;
-                font-size: 0.92em;
-                line-height: 1.65;
-            }
-            .action-btn-group {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .action-btn-group .main-btn {
-                width: 100%;
-            }
+            body { padding: 10px; }
+            .container { padding: 18px 15px; }
+            .result-container-dark { padding: 18px 12px; }
+            .report-table td { padding: 10px 8px; font-size: 0.88em; }
+            .tb-label { width: 40%; }
+            .tb-val { width: 60%; }
+            .action-btn-group { flex-direction: column; gap: 8px; }
+            .action-btn-group .main-btn { width: 100%; }
         }
     </style>
 </head>
 <body oncontextmenu="return false">
 
 <div class="container">
+    <!-- 1. 登入畫面 -->
     <div id="login-screen">
         <h2 class="text-center">線上模擬評量系統</h2>
         <div class="input-group">
@@ -223,6 +243,7 @@
         <button id="start-btn" class="main-btn" onclick="checkAndStart()" style="background:#cbd5e1; color:#64748b;" disabled>進入測驗</button>
     </div>
 
+    <!-- 2. 測驗進行畫面 -->
     <div id="quiz-ui" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #f1f5f9;">
             <span id="quiz-header" style="font-weight:bold; color:var(--primary); font-size:1.1em;">載入中...</span>
@@ -239,33 +260,79 @@
         <button class="main-btn" style="background:var(--primary); margin-top: 25px;" onclick="confirmSubmit()">提交作答</button>
     </div>
 
+    <!-- 3. 結果與報告畫面 (Table 結構) -->
     <div id="result-screen" class="hidden">
-        <!-- 黑底評量報告區域 -->
         <div class="result-container-dark" id="report-card">
-            <div>科目名稱：<span id="res-subject">--</span></div>
-            <div>第 <span id="res-test-count" class="res-blue">1</span> 次測驗</div>
-            <div>成績：<span id="res-score">0</span></div>
-            <div>答對題數：<span id="res-correct" class="res-blue">0</span></div>
-            <div>答錯題數：<span id="res-orange" class="res-orange">0</span></div>
-            <div>未作答題數：<span id="res-unanswered">0</span></div>
-            <br>
-            <div>經成績比對本次測驗結果以 <span id="res-pass-label">--</span></div>
-            <br>
-            <div>測試者姓名：<span id="res-username">--</span></div>
-            <div>測試開始時間：台北標準時間(GTM+8)<span id="res-start-time">--</span>&lt;24時制&gt;</div>
-            <div>交卷時間：台北標準時間(GTM+8)<span id="res-end-time">--</span>&lt;24時制&gt;</div>
-            <div>是否檢測到作弊行為：<span id="res-cheated">否</span></div>
-            <div id="empty-paper-msg" class="hidden" style="color:#ef4444; font-weight:bold;">檢測到惡意繳交空白試卷</div>
-            <div>作答使用時間：<span id="res-duration">--</span></div>
-            <div>作答者IP：<span id="res-ip" class="res-blue">載入中...</span></div>
-            <div>作答者答題平台：<span id="res-platform">--</span></div>
-            <div>平均答題速度：每題平均 <span id="res-avg-speed">0</span> 秒</div>
-            <br>
-            <div style="text-align: center;">==============以上測驗結果==============</div>
-            <div style="text-align: right; font-size: 0.85em; margin-top: 5px;">&copy;2026 著作權所有仿冒必究</div>
+            <h2 style="text-align: center; color: #ffffff; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px;">線上評量結果報告</h2>
+            
+            <table class="report-table">
+                <tr>
+                    <td class="tb-label">科目名稱</td>
+                    <td class="tb-val" id="res-subject">--</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">測驗次數</td>
+                    <td class="tb-val">第 <span id="res-test-count" class="res-blue">1</span> 次測驗</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">測驗得分</td>
+                    <td class="tb-val"><span id="res-score" style="font-size:1.2em; font-weight:bold;">0</span> 分</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">答對 / 答錯題數</td>
+                    <td class="tb-val">
+                        對：<span id="res-correct" class="res-blue">0</span> 題 / 
+                        錯：<span id="res-orange" class="res-orange">0</span> 題
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tb-label">未作答題數</td>
+                    <td class="tb-val" id="res-unanswered">0 題</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">測驗結果判定</td>
+                    <td class="tb-val" id="res-pass-label">--</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">測試者姓名</td>
+                    <td class="tb-val" id="res-username">--</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">測試時間 (GTM+8)</td>
+                    <td class="tb-val">
+                        開始：<span id="res-start-time">--</span> | 結束：<span id="res-end-time">--</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tb-label">檢測到作弊行為</td>
+                    <td class="tb-val" id="res-cheated">否</td>
+                </tr>
+                <tr id="empty-paper-row" class="hidden">
+                    <td class="tb-label">異常警告</td>
+                    <td class="tb-val" style="color:#ef4444; font-weight:bold;">檢測到惡意繳交空白試卷</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">作答總耗時</td>
+                    <td class="tb-val" id="res-duration">--</td>
+                </tr>
+                <tr>
+                    <td class="tb-label">作答者 IP / 載具</td>
+                    <td class="tb-val">
+                        <span id="res-ip" class="res-blue">--</span> (<span id="res-platform">--</span>)
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tb-label">平均答題速度</td>
+                    <td class="tb-val">每題約 <span id="res-avg-speed">0</span> 秒</td>
+                </tr>
+            </table>
+
+            <div style="text-align: center; margin-top: 20px; color: #64748b; font-size: 0.85em;">
+                &copy;2026 著作權所有 仿冒必究
+            </div>
         </div>
 
-        <!-- 底部功能按鈕群 -->
+        <!-- 底部按鈕群 -->
         <div class="action-btn-group">
             <button class="main-btn btn-success" onclick="downloadPDF()">下載結果 PDF</button>
             <button id="retry-failed-btn" class="main-btn hidden" style="background:var(--accent);" onclick="startWrongQuestionsQuiz()">僅重測錯題</button>
@@ -548,20 +615,20 @@
         document.getElementById('res-orange').innerText = wrongCount;
 
         const unAnsElem = document.getElementById('res-unanswered');
-        unAnsElem.innerText = unansweredCount;
-        unAnsElem.className = unansweredCount === 0 ? "res-green" : "res-red";
+        unAnsElem.innerText = `${unansweredCount} 題`;
+        unAnsElem.className = unansweredCount === 0 ? "tb-val res-green" : "tb-val res-red";
 
-        // 🎯 成績比對結果邏輯（作弊時顯示：因作弊不記錄成績）
+        // 🎯 核心判定：作弊顯示「因作弊不記錄成績」
         const passLabel = document.getElementById('res-pass-label');
         if (warningCount > 0) {
             passLabel.innerText = "因作弊不記錄成績";
-            passLabel.className = "res-red";
+            passLabel.className = "tb-val res-red";
         } else if (score >= 60) {
             passLabel.innerText = "及格 論";
-            passLabel.className = "res-black-pass";
+            passLabel.className = "tb-val res-black-pass";
         } else {
             passLabel.innerText = "不及格 論";
-            passLabel.className = "res-red";
+            passLabel.className = "tb-val res-red";
         }
 
         document.getElementById('res-username').innerText = document.getElementById('user-name').value;
@@ -571,19 +638,19 @@
         // 作弊檢測判定
         const cheatElem = document.getElementById('res-cheated');
         if (warningCount > 0) {
-            cheatElem.innerText = `檢測到離開畫面${warningCount}次`;
-            cheatElem.className = "res-red";
+            cheatElem.innerText = `檢測到離開畫面 ${warningCount} 次`;
+            cheatElem.className = "tb-val res-red";
         } else {
             cheatElem.innerText = "否";
-            cheatElem.className = "res-yellow";
+            cheatElem.className = "tb-val res-yellow";
         }
 
-        // 惡意交白卷警告
-        const emptyMsgElem = document.getElementById('empty-paper-msg');
+        // 惡意交白卷警告列控制
+        const emptyRow = document.getElementById('empty-paper-row');
         if (answeredCount === 0) {
-            emptyMsgElem.classList.remove('hidden');
+            emptyRow.classList.remove('hidden');
         } else {
-            emptyMsgElem.classList.add('hidden');
+            emptyRow.classList.add('hidden');
         }
 
         document.getElementById('res-duration').innerText = `${hours}時${mins}分${secs}秒`;
