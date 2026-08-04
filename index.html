@@ -127,6 +127,24 @@
         .nav-flex { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
         .nav-btn { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; border-radius: 4px; }
         .nav-btn:hover { background: #f1f5f9; }
+
+        /* 指定的黑底評量報告樣式 */
+        .result-container-dark {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            font-family: monospace, sans-serif;
+            text-align: left;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+        .res-blue { color: #3b82f6; font-weight: bold; }
+        .res-orange { color: #f97316; font-weight: bold; }
+        .res-green { color: #22c55e; font-weight: bold; }
+        .res-red { color: #ef4444; font-weight: bold; }
+        .res-yellow { color: #eab308; font-weight: bold; }
+        .res-black-pass { color: #ffffff; font-weight: bold; } /* 黑底中以亮白顯示及格 */
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -147,11 +165,13 @@
                 本系統所提供之測驗內容、學術題目及解析僅供學術交流與個人自我評量用途。系統開發方與學術內容提供者已盡力確保內容之正確性，惟不保證所有資訊皆毫無疏漏。若因題目錯誤、系統延遲、評分偏差或其他不可抗力因素導致使用者之正式考試成績、權益 or 決策產生偏差，本系統及開發方概不負任何法律責任與賠償義務。</p>
                 <p><strong>第二條：勘誤回報義務</strong><br>
                 使用者於測驗過程中，如發現任何題目敘述錯誤、選項爭議、公式渲染異常或解析謬誤，有義務立即紀錄該題資訊並聯絡系統開發人員進行回報，以利系統持續維護。使用者不得利用已知錯誤進行惡意刷分或散佈不實言論。</p>
+                <p><strong>第三條：IP 位址存取與紀錄授權</strong><br>
+                為維護系統公平性、安全驗證及防範惡意作弊或攻擊行為，使用者同意並授權本系統於測驗期間自動存取、讀取並紀錄使用者之網際網路協定位址（IP 位址）、裝置資訊及平台載具數據。該資訊僅用於測驗報告生成與防弊核驗，不作其他商業用途。</p>
             </div>
 
             <div class="checkbox-group">
                 <label>
-                    <input type="checkbox" id="agree-terms"> 我已詳細閱讀並同意上述「學術免責聲明」與「勘誤回報義務」之規範
+                    <input type="checkbox" id="agree-terms"> 我已詳細閱讀並同意上述「學術免責聲明」、「勘誤回報義務」與「IP存取授權」之規範
                 </label>
             </div>
 
@@ -177,11 +197,31 @@
     </div>
 
     <div id="result-screen" class="hidden">
-        <h2 class="text-center">評量結算報告</h2>
-        <h1 id="final-score" class="text-center" style="font-size: 4em; color:var(--accent); margin: 10px 0;">0</h1>
-        <p id="pass-status" class="text-center" style="font-weight:bold; font-size: 1.2em; margin-bottom: 20px;"></p>
+        <!-- 黑底評量報告區域 -->
+        <div class="result-container-dark">
+            <div>科目名稱：<span id="res-subject">--</span></div>
+            <div>第 <span id="res-test-count" class="res-blue">1</span> 次測驗</div>
+            <div>成績：<span id="res-score">0</span></div>
+            <div>答對題數：<span id="res-correct" class="res-blue">0</span></div>
+            <div>答錯題數：<span id="res-wrong" class="res-orange">0</span></div>
+            <div>未作答題數：<span id="res-unanswered">0</span></div>
+            <br>
+            <div>經成績比對本次測驗結果以 <span id="res-pass-label">--</span> 論</div>
+            <br>
+            <div>測試者姓名：<span id="res-username">--</span></div>
+            <div>測試開始時間：台北標準時間(GTM+8)<span id="res-start-time">--</span>&lt;24時制&gt;</div>
+            <div>交卷時間：台北標準時間(GTM+8)<span id="res-end-time">--</span>&lt;24時制&gt;</div>
+            <div>是否檢測到作弊行為：<span id="res-cheated">否</span></div>
+            <div>作答使用時間：<span id="res-duration">--</span></div>
+            <div>作答者IP：<span id="res-ip" class="res-blue">載入中...</span></div>
+            <div>作答者答題平台：<span id="res-platform">--</span></div>
+            <div>平均答題速度：每題平均 <span id="res-avg-speed">0</span> 秒</div>
+            <br>
+            <div style="text-align: center;">==============以上測驗結果==============</div>
+            <div style="text-align: right; font-size: 0.85em; margin-top: 5px;">&copy;2026 著作權所有仿冒必究</div>
+        </div>
 
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; margin-top: 20px;">
             <button id="retry-failed-btn" class="main-btn hidden" style="background:var(--accent);" onclick="startWrongQuestionsQuiz()">僅重測錯題</button>
             <button class="main-btn btn-secondary" onclick="location.reload()">返回登入畫面</button>
         </div>
@@ -193,12 +233,32 @@
 <script>
     let quizActive = false;
     let currentQuestions = [], userAnswers = {}, timerInterval, totalSeconds = 0;
-    let currentActiveIndex = 0; // 當前聚焦題目的索引
-    let isWrongQuestionsMode = false; // 是否處於錯題重測模式
-    let originalWrongQuestions = []; // 儲存篩選出的錯題
-    
+    let currentActiveIndex = 0;
+    let isWrongQuestionsMode = false;
+    let originalWrongQuestions = [];
+
     // 防作弊 / 離開畫面監控變數
     let warningCount = 0;
+
+    // 統計時間與使用者 IP 紀錄
+    let startTimeObj, endTimeObj;
+    let userIP = "未知IP";
+
+    // 預先取得 IP 位址
+    fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => { userIP = data.ip; })
+        .catch(() => { userIP = "127.0.0.1"; });
+
+    // 取得作業系統平台
+    function getPlatform() {
+        const ua = navigator.userAgent;
+        if (ua.includes("Win")) return "Windows";
+        if (ua.includes("Mac")) return "macOS";
+        if (ua.includes("Android")) return "Android";
+        if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+        return "Unknown";
+    }
 
     // 監聽題庫代碼輸入
     document.getElementById('quiz-code').addEventListener('input', (e) => {
@@ -236,19 +296,17 @@
         }
     }
 
-    // 請求開啟全螢幕模式
     function requestFullScreen() {
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
             elem.requestFullscreen().catch(() => {});
-        } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+        } else if (elem.webkitRequestFullscreen) {
             elem.webkitRequestFullscreen().catch(() => {});
         } else if (elem.msRequestFullscreen) {
             elem.msRequestFullscreen().catch(() => {});
         }
     }
 
-    // 離開全螢幕退出處理
     function exitFullScreen() {
         if (document.exitFullscreen) {
             document.exitFullscreen().catch(() => {});
@@ -263,10 +321,8 @@
         if(window.currentQuiz.password && document.getElementById('quiz-pass').value !== window.currentQuiz.password) {
             return alert("密碼有誤！");
         }
-        
-        // 點擊進入測驗時請求全螢幕
-        requestFullScreen();
 
+        requestFullScreen();
         isWrongQuestionsMode = false;
         beginQuiz(JSON.parse(JSON.stringify(window.currentQuiz.data)).sort(() => Math.random() - 0.5));
     }
@@ -282,9 +338,9 @@
         currentQuestions = questionsDataset;
         userAnswers = {};
         currentActiveIndex = 0;
-        warningCount = 0; // 重置警告次數
+        warningCount = 0;
+        startTimeObj = new Date();
 
-        // 設定時間
         totalSeconds = (quiz.time || 20) * 60;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -298,51 +354,35 @@
         renderQuiz();
     }
 
-    // 監聽分頁切換 / 離開畫面 / 退出全螢幕防作弊機制
     function handleViolation() {
         if (!quizActive) return;
 
         warningCount++;
         if (warningCount === 1) {
             alert("⚠️ 警告【第 1 次】：測驗期間禁止切換視窗或離開畫面！再犯一次將會被強制交卷！");
-            requestFullScreen(); // 嘗試重新拉回全螢幕
+            requestFullScreen();
         } else if (warningCount >= 2) {
             alert("🚨 系統通知【第 2 次違規】：您已再次離開測驗畫面，系統已自動為您強制提交考卷！");
             evalQuiz();
         }
     }
 
-    // 1. 分頁隱藏/切換應用程式偵測
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden && quizActive) {
-            handleViolation();
-        }
+        if (document.hidden && quizActive) handleViolation();
     });
 
-    // 2. 視窗失去焦點偵測
     window.addEventListener("blur", () => {
-        if (quizActive) {
-            handleViolation();
-        }
+        if (quizActive) handleViolation();
     });
 
-    // 3. 手動退出全螢幕偵測
     document.addEventListener("fullscreenchange", () => {
-        if (!document.fullscreenElement && quizActive) {
-            handleViolation();
-        }
-    });
-    document.addEventListener("webkitfullscreenchange", () => {
-        if (!document.webkitFullscreenElement && quizActive) {
-            handleViolation();
-        }
+        if (!document.fullscreenElement && quizActive) handleViolation();
     });
 
     function renderQuiz() {
         const container = document.getElementById('quiz-container');
         container.innerHTML = '';
 
-        // 渲染所有題目，但僅將當前題（currentActiveIndex）顯示
         currentQuestions.forEach((q, i) => {
             const card = document.createElement('div'); 
             card.className = `question-card ${i === currentActiveIndex ? '' : 'hidden'}`;
@@ -355,7 +395,6 @@
                 b.className = 'opt-btn'; 
                 b.innerText = opt;
 
-                // 檢查是否已作答，用於保留狀態
                 const optLetter = opt.match(/\(([A-D])\)/)[1];
                 if(userAnswers[i] === optLetter) b.classList.add('selected');
 
@@ -364,7 +403,6 @@
                     Array.from(b.parentElement.children).forEach(x => x.classList.remove('selected'));
                     b.classList.add('selected');
 
-                    // 自動觸發：延時 300 毫秒後自動跳至下一題
                     setTimeout(() => {
                         if (currentActiveIndex < currentQuestions.length - 1) {
                             navigateQuestion(1);
@@ -377,7 +415,6 @@
         if (window.MathJax) MathJax.typesetPromise([container]);
     }
 
-    // 控制題號前後切換
     function navigateQuestion(direction) {
         const newIndex = currentActiveIndex + direction;
         if(newIndex >= 0 && newIndex < currentQuestions.length) {
@@ -388,7 +425,6 @@
     }
 
     function confirmSubmit() { 
-        // 檢查未答題數
         const answeredCount = Object.keys(userAnswers).length;
         if(answeredCount < currentQuestions.length) {
             if(!confirm(`尚有 ${currentQuestions.length - answeredCount} 題未作答，確定要提早提交？`)) return;
@@ -401,16 +437,16 @@
     function evalQuiz() {
         quizActive = false;
         clearInterval(timerInterval);
-        
-        // 結束測驗後退出全螢幕
+        endTimeObj = new Date();
+
         exitFullScreen();
 
         document.getElementById('quiz-ui').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
 
         let correctCount = 0;
-        let reviewHTML = '<h3>詳細解析評估 (正確答案已標註)</h3>';
-        originalWrongQuestions = []; // 清空上一次的錯題暫存
+        let reviewHTML = '<h3 style="color:#ffffff; margin-top:20px;">詳細解析評估 (正確答案已標註)</h3>';
+        originalWrongQuestions = [];
 
         currentQuestions.forEach((q, i) => {
             const correctContent = q.o.find(str => str.trim().startsWith(`(${q.a})`));
@@ -418,7 +454,6 @@
             if(isRight) {
                 correctCount++;
             } else {
-                // 將答錯的原始題目物件推入錯題庫中
                 originalWrongQuestions.push(q);
             }
 
@@ -430,15 +465,63 @@
                 </div>`;
         });
 
-        const score = Math.round(correctCount * (100 / currentQuestions.length));
-        document.getElementById('final-score').innerText = score;
+        const totalQ = currentQuestions.length;
+        const answeredCount = Object.keys(userAnswers).length;
+        const unansweredCount = totalQ - answeredCount;
+        const wrongCount = totalQ - correctCount - unansweredCount;
+        const score = Math.round(correctCount * (100 / totalQ));
+
+        let testCountKey = `test_count_${window.currentQuiz.name}`;
+        let localCount = (parseInt(localStorage.getItem(testCountKey)) || 0) + 1;
+        localStorage.setItem(testCountKey, localCount);
+
+        const formatTime = (date) => date.toTimeString().substring(0, 5);
+
+        const durationSec = Math.max(1, Math.floor((endTimeObj - startTimeObj) / 1000));
+        const hours = String(Math.floor(durationSec / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((durationSec % 3600) / 60)).padStart(2, '0');
+        const secs = String(durationSec % 60).padStart(2, '0');
+        const avgSpeed = (durationSec / totalQ).toFixed(1);
+
+        document.getElementById('res-subject').innerText = window.currentQuiz.name;
+        document.getElementById('res-test-count').innerText = localCount;
+        document.getElementById('res-score').innerText = score;
+        document.getElementById('res-correct').innerText = correctCount;
+        document.getElementById('res-wrong').innerText = wrongCount;
+
+        const unAnsElem = document.getElementById('res-unanswered');
+        unAnsElem.innerText = unansweredCount;
+        unAnsElem.className = unansweredCount === 0 ? "res-green" : "res-red";
+
+        const passLabel = document.getElementById('res-pass-label');
+        if (score >= 60) {
+            passLabel.innerText = "及格";
+            passLabel.className = "res-black-pass";
+        } else {
+            passLabel.innerText = "不及格";
+            passLabel.className = "res-red";
+        }
+
+        document.getElementById('res-username').innerText = document.getElementById('user-name').value;
+        document.getElementById('res-start-time').innerText = formatTime(startTimeObj);
+        document.getElementById('res-end-time').innerText = formatTime(endTimeObj);
+
+        const cheatElem = document.getElementById('res-cheated');
+        if (warningCount > 0) {
+            cheatElem.innerText = "是";
+            cheatElem.className = "res-red";
+        } else {
+            cheatElem.innerText = "否";
+            cheatElem.className = "res-yellow";
+        }
+
+        document.getElementById('res-duration').innerText = `${hours}時${mins}分${secs}秒`;
+        document.getElementById('res-ip').innerText = userIP;
+        document.getElementById('res-platform').innerText = getPlatform();
+        document.getElementById('res-avg-speed').innerText = avgSpeed;
+
         document.getElementById('review-area').innerHTML = reviewHTML;
 
-        const ps = document.getElementById('pass-status');
-        ps.innerText = score >= 60 ? "評等：及格" : "評等：不及格";
-        ps.style.color = score >= 60 ? "var(--success)" : "var(--error)";
-
-        // 控制「錯題重測」按鈕顯隱
         const retryBtn = document.getElementById('retry-failed-btn');
         if(originalWrongQuestions.length > 0) {
             retryBtn.classList.remove('hidden');
@@ -449,13 +532,11 @@
         if (window.MathJax) MathJax.typesetPromise([document.getElementById('review-area')]);
     }
 
-    // 啟動錯題重測機制
     function startWrongQuestionsQuiz() {
         if(originalWrongQuestions.length === 0) return;
-        
-        requestFullScreen(); // 錯題重測時也觸發全螢幕
+
+        requestFullScreen();
         isWrongQuestionsMode = true;
-        // 複製錯題集並隨機洗牌
         const wrongDataset = JSON.parse(JSON.stringify(originalWrongQuestions)).sort(() => Math.random() - 0.5);
         beginQuiz(wrongDataset);
     }
